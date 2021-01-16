@@ -1,0 +1,12 @@
+services:
+    sacrpkg_crud.action_factory:
+        class: sacrpkg\CrudBundle\Action\ActionFactory
+        public: true
+        arguments:
+            - '@doctrine'
+            - '@request_stack'
+            - '@form.factory'
+            - '@router.default'
+            - '@parameter_bag'
+
+    sacrpkg\CrudBundle\Action\ActionFactoryInterface: '@sacrpkg_crud.action_factory'

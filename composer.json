@@ -1,0 +1,39 @@
+{
+    "type": "symfony-bundle",
+    "name": "sacrpkg/crud-bundle",
+    "description": "CRUD bundle",    
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Oleg Bruyako",
+            "email": "jonsm2184@gmail.com",
+            "role": "Developer"        
+        }
+    ],
+    "require": {
+        "php": ">=7.2.3",
+        "ext-ctype": "*",
+        "ext-iconv": "*",
+        "symfony/framework-bundle": "^5.0",
+        "symfony/yaml": "^5.0"
+    },
+    "require-dev": {
+    },
+    "minimum-stability": "stable",
+    "autoload": {
+        "psr-4": {
+            "sacrpkg\\CrudBundle\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "sacrpkg\\CrudBundle\\Tests\\": "tests"
+        }
+    },
+    "extra": {
+        "symfony": {
+            "allow-contrib": false,
+            "require": "5.0.*"
+        }
+    }
+}
