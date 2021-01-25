@@ -124,12 +124,6 @@ abstract class ActionAbstract
 
 	public function saveFields($row, Request $request, $params = [])
 	{
-        $usetr = $params['use_translate'] ?? false;
-                        if ($usetr) {
-							$entity = $this->entity;
-							foreach ($entity::getTranslateField() as $field)
-								$this->saveTranslate($row, $field);
-                        }
     }
 
     public function setBeforeInit($beforeinit): self
@@ -208,34 +202,7 @@ abstract class ActionAbstract
         $url = $this->router->generate($route, [], UrlGeneratorInterface::ABSOLUTE_PATH);
         return new RedirectResponse($url, 302);
     }
-    
-    protected function saveTranslate($data, $field)
-    {
-        $em = $this->em;
-        $langs = $em->getRepository('App:Language')->findBy(['available_for_translation' => true],['name' => 'ASC']);
-        $translates = $data->getTranslates();
-        $method = 'set' . str_replace('_', '', ucwords($field, '_'));        
-        foreach ($langs as $lang) {
-            $needadd = true;
-            $name = $field . $lang->getSlug();
-            foreach ($translates as $tr) {
-                if ($tr->getLanguage()->getSlug() == $lang->getSlug()) {
-                    $tr->$method($data->$name);
-                    $needadd = false;
-                }
-            }
-            
-            if ($needadd) {
-                $classname = $data->getTanslateClass();
-                $langtempl = new $classname();
-                $langtempl->$method($data->$name);
-                $langtempl->setLanguage($lang);
-                $em->persist($langtempl);
-                $data->addTranslate($langtempl);
-            }
-        }
-    }
-    
+
     protected function beforeInitExecute(EntityManager $em, $item): self
     {
         $func = $this->beforeinit;
