@@ -10,3 +10,12 @@ services:
             - '@parameter_bag'
 
     sacrpkg\CrudBundle\Action\ActionFactoryInterface: '@sacrpkg_crud.action_factory'
+
+    sacrpkg_crud.paginator:
+        class: sacrpkg\CrudBundle\Model\Paginator
+        public: true
+        arguments:
+            - '@request_stack'
+
+
+    sacrpkg\CrudBundle\Model\Paginator: '@sacrpkg_crud.paginator'

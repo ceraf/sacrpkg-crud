@@ -35,6 +35,8 @@ abstract class ActionAbstract
     protected $beforeinit;
     protected $messages;
     protected $formfactory;
+    protected $beforedelete;
+    protected $editroute;
     
     abstract public function execute($params = []);
     
@@ -102,6 +104,12 @@ abstract class ActionAbstract
         $this->title = $title;
         return $this;
     }
+    
+    public function setEditRoute($editroute)
+    {
+		$this->editroute = $editroute;
+		return $this;        
+    }  
 
     public function setHomeRoute($homeroute, $homeparams = [])
     {
@@ -113,6 +121,12 @@ abstract class ActionAbstract
     public function setBeforeSave($beforesave): self
     {
         $this->beforesave = $beforesave;
+        return $this;
+    }
+
+    public function setBeforeDelete($beforedelete): self
+    {
+        $this->beforedelete = $beforedelete;
         return $this;
     }
 
@@ -187,6 +201,16 @@ abstract class ActionAbstract
         return $this;
     }  
     
+    protected function beforeDeleteExecute(EntityManager $em, $item): self
+    {
+        $func = $this->beforedelete;
+        if (is_callable($func)) {
+            $func($em, $item);
+        }
+        
+        return $this;
+    }
+    
     protected function afterSaveExecute(EntityManager $em, $item): self
     {
         $func = $this->aftersave;
@@ -197,9 +221,9 @@ abstract class ActionAbstract
         return $this;
     } 
     
-    protected function redirectToRoute($route)
+    protected function redirectToRoute($route, $params = [])
     { 
-        $url = $this->router->generate($route, [], UrlGeneratorInterface::ABSOLUTE_PATH);
+        $url = $this->router->generate($route, $params, UrlGeneratorInterface::ABSOLUTE_PATH);
         return new RedirectResponse($url, 302);
     }
 
