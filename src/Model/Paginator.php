@@ -126,12 +126,12 @@ class Paginator
     
     protected function getSession($name)
     {
-        return $this->session->get((new \ReflectionClass($this))->getShortName().'_'.$name);
+        return $this->session->get((new \ReflectionClass($this->grid))->getShortName().'_'.$name);
     }
     
     protected function setSession($name, $value)
     {
-        $this->session->set((new \ReflectionClass($this))->getShortName().'_'.$name, $value);
+        $this->session->set((new \ReflectionClass($this->grid))->getShortName().'_'.$name, $value);
         return $this;
     }
 }
