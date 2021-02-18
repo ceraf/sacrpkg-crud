@@ -7,8 +7,9 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\RouterInterface;
+use sacrpkg\CrudBundle\Model\Reader\ReaderInterface;
 
-abstract class AdminGrid
+abstract class GridAbstract implements GridInterface
 {
     const SESSION_COUNT_ITEMS = 'numitems';
     const SESSION_SORT_BY = 'sort_by';
@@ -35,7 +36,7 @@ abstract class AdminGrid
     protected $sortby;
     protected $sorttype;
     protected $search;
-    protected $filter;
+    protected $filterdata;
     protected $linestyles;
 	protected $params;
 	protected $formview;
@@ -47,21 +48,26 @@ abstract class AdminGrid
     protected $use_checker = false;
     protected $messages;
     protected $em;
+    protected $reader;
     protected $router;
 
-    public function __construct(RequestStack $requestStack, ManagerRegistry $doctrine,
-            Paginator $paginator, RouterInterface $router)
+    public function __construct(RequestStack $requestStack, ManagerRegistry $doctrine, ReaderInterface $reader,
+            Paginator $paginator, RouterInterface $router, Filter $filter)
     { 
         $this->request = $requestStack->getCurrentRequest();
         $this->em = $doctrine->getManager();
         $this->session = $this->request->getSession();
         $this->paginator = $paginator;
         $this->router = $router;
+        $this->reader = $reader;
+        $this->filter = $filter;
+        
         $this->init();
-        $this->afterInit();
         $this->paginator->setGrid($this)
             ->init($this->itemsonpage, $this->sortfield_default,
-                                $this->sorttype_default, $this->grid_route);    
+                                $this->sorttype_default, $this->grid_route);           
+        $this->afterInit();
+ 
     }
     
     public function setController(AbstractController $controller): self
@@ -89,7 +95,7 @@ abstract class AdminGrid
     
 	public function setFilter($data)
 	{
-		$this->filter = $data;
+		$this->filterdata = $data;
 		return $this;
 	}
 	
@@ -111,7 +117,7 @@ abstract class AdminGrid
                 'sorttype' => strtolower($this->sorttype),
                 'search' => $this->search,
                 'usefilter' => $this->usefilter,
-                'filter' => $this->filter,
+                'filter' => $this->filter->getData(),
                 'linestyles' => $this->linestyles,
 				'params' => $this->params,
 				'breadcrumb' => $this->breadcrumb,
@@ -159,7 +165,24 @@ abstract class AdminGrid
 			'icon' => 'icon-plus-circle2 mr-2'
         ];
     }
-
+    
+	public function setFormView($formview)
+	{
+		$this->formview = $formview;
+		return $this;
+	}
+	
+    protected function getGridSession($name)
+    {
+        return $this->session->get((new \ReflectionClass($this))->getShortName().'_'.$name);
+    }
+    
+    protected function setGridSession($name, $value)
+    {
+        $this->session->set((new \ReflectionClass($this))->getShortName().'_'.$name, $value);
+        return $this;
+    }
+    
     protected function getPaginator($total, Request $request)
     {
         $p = $request->get('p') ?? '0';
@@ -183,23 +206,6 @@ abstract class AdminGrid
         return $paginator;        
     }
     
-	public function setFormView($formview)
-	{
-		$this->formview = $formview;
-		return $this;
-	}
-	
-    protected function getGridSession($name)
-    {
-        return $this->session->get((new \ReflectionClass($this))->getShortName().'_'.$name);
-    }
-    
-    protected function setGridSession($name, $value)
-    {
-        $this->session->set((new \ReflectionClass($this))->getShortName().'_'.$name, $value);
-        return $this;
-    }
-    
     protected function initSort(): void
     {
         $this->sortby = ($this->getGridSession('sort_by')) ?? $this->sortfield_default;
@@ -217,10 +223,10 @@ abstract class AdminGrid
             $this->setGridSession(self::SESSION_SORT_TYPE, $this->sorttype);
         }  
     }
-    
+
     protected function initSearch(): void
     {
-		$currfilter = $this->filter;
+		$currfilter = $this->filterdata;
         $this->search = strtolower($this->request->get('search') ?? null);
         if ($this->request->get('filter_apply', null)) {
             $filter = $this->request->get('filter');
@@ -230,15 +236,15 @@ abstract class AdminGrid
             $this->setGridSession(self::SESSION_FILTER, $filter);
         } else
             $filter = ($this->getGridSession(self::SESSION_FILTER)) ?? null;
-        $this->filter = $filter;
+        $this->filterdata = $filter;
 		if ($currfilter) {
-			if (is_array($this->filter))
-				$this->filter = array_merge($this->filter, $currfilter);
+			if (is_array($this->filterdata))
+				$this->filterdata = array_merge($this->filterdata, $currfilter);
 			else
-				$this->filter = $currfilter;
+				$this->filterdata = $currfilter;
 		}
     }
-    
+
     protected function beforeGetCollection()
     {
     }
@@ -249,28 +255,30 @@ abstract class AdminGrid
     
     protected function fetch()
     {
-       // $this->initSort();
+        $this->filter->init($this->filter_fields, $this->filterdata);
+        try {     
+            $this->beforeGetCollection();
+            $this->reader->fetch($this->paginator, $this->filter, $this->entityname);
+            $this->collection = $this->reader->getCollection();
+            $this->afterGetCollection(); 
+        } catch (\Exception $e) {
+            $this->collection = null;
+            $this->flashMessage('error', $e->getMessage());
+        }
+        /*
         $this->initSearch();
 
-        try {
+
             $repository = $this->em->getRepository($this->entityname);
                             
             if (method_exists($repository, 'getByPage')) {
                 $this->beforeGetCollection();
-                //$p = $this->request->get('p') ?? '0';
-                /*
-                $items = $repository->getListByFilter($this->filter ?? [],
-                    $this->itemsonpage, ($p + 1)*$this->itemsonpage, $this->sortby, $this->sorttype);
-                    */
+
                 $items = $repository->getGridCollection((clone $this->paginator)->incPage(), $this->filter ?? []);
                 $total = ($this->paginator->getCurrPage()+1)*$this->paginator->getItemsOnPage() + count($items ?? []);
-                //$this->paginator = $this->getPaginator($total, $this->request);
+
                 $this->paginator->setTotal($total);
-                /*
-                $this->collection = $repository->getByPage( 
-                        $this->paginator, $this->sortby, $this->sorttype, $this->search, $this->filter);
-                        */
-                        
+
                 $this->collection = $repository->getGridCollection($this->paginator, $this->filter ?? []);
                 $this->afterGetCollection(); 
             } else {
@@ -281,6 +289,11 @@ abstract class AdminGrid
             $this->collection = null;
             $this->flashMessage('error', $e->getMessage());
         }
+        */
+        
+        
+        
+        
         return $this;
     }
     

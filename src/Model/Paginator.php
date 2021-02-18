@@ -24,7 +24,7 @@ class Paginator
         $this->session = $this->request->getSession();
     }
     
-    public function setGrid(AdminGrid $grid): self
+    public function setGrid(GridAbstract $grid): self
     {
         $this->grid = $grid;
         

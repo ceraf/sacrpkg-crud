@@ -19,3 +19,21 @@ services:
 
 
     sacrpkg\CrudBundle\Model\Paginator: '@sacrpkg_crud.paginator'
+
+    sacrpkg_crud.filter:
+        class: sacrpkg\CrudBundle\Model\Filter
+        public: true
+        arguments:
+            - '@request_stack'
+
+
+    sacrpkg\CrudBundle\Model\Filter: '@sacrpkg_crud.filter'
+
+    sacrpkg_crud.doctrine_reader:
+        class: sacrpkg\CrudBundle\Model\Reader\DoctrineReader
+        public: true
+        arguments:
+            - '@doctrine'
+
+
+    sacrpkg\CrudBundle\Model\Reader\DoctrineReader: '@sacrpkg_crud.doctrine_reader'
