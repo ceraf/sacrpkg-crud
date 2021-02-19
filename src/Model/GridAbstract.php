@@ -8,6 +8,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\RouterInterface;
 use sacrpkg\CrudBundle\Model\Reader\ReaderInterface;
+use sacrpkg\CrudBundle\Model\Render\RenderIntarface;
 
 abstract class GridAbstract implements GridInterface
 {
@@ -50,9 +51,10 @@ abstract class GridAbstract implements GridInterface
     protected $em;
     protected $reader;
     protected $router;
+    protected $render;
 
     public function __construct(RequestStack $requestStack, ManagerRegistry $doctrine, ReaderInterface $reader,
-            Paginator $paginator, RouterInterface $router, Filter $filter)
+            PaginatorInterface $paginator, RouterInterface $router, FilterInterface $filter, RenderIntarface $render)
     { 
         $this->request = $requestStack->getCurrentRequest();
         $this->em = $doctrine->getManager();
@@ -62,7 +64,10 @@ abstract class GridAbstract implements GridInterface
         $this->reader = $reader;
         $this->filter = $filter;
         
+        $this->render = $render;
+        
         $this->init();
+        $this->filter->setGridRoute($this->grid_route);
         $this->paginator->setGrid($this)
             ->init($this->itemsonpage, $this->sortfield_default,
                                 $this->sorttype_default, $this->grid_route);           
@@ -104,7 +109,39 @@ abstract class GridAbstract implements GridInterface
         if (!$this->collection)
             $this->fetch();
             
-        return $this->controller->renderGrid(
+        $formview = $this->formview ?: 'Admin/grid/grid.html.twig';
+        
+        return $this->render->setCollection($this->collection)
+                    ->setActions($this->actions)
+                    ->setFields($this->fields)
+                    ->setButtons($this->buttons)
+                    ->setPaginator($this->paginator)
+                    ->setFilter($this->filter)
+                    ->setParams([
+                       // 'grid_route' => $this->grid_route,
+
+                            'title' => $this->title,
+                       //     'sortby' => $this->sortby,
+                       //     'sorttype' => strtolower($this->sorttype),
+                       //     'search' => $this->search,
+                       
+                            
+                            'linestyles' => $this->linestyles,
+                            'params' => $this->params,
+                            'breadcrumb' => $this->breadcrumb,
+                        //    'use_paginator' => $this->use_paginator,
+                            'edit_only' => $this->edit_only,
+                            'action_route' => $this->action_route,
+                            'use_checker' => $this->use_checker,
+                      //     'usefilter' => $this->usefilter,      
+                      //      'use_filter' => $this->use_filter,  
+                      //      'filter_fields' => $this->filter_fields, 
+                    ])
+                    ->getReResponse($formview);
+            /*
+
+            
+        return new Response( $this->twig->render($formview,
             [
                 'rows' => $this->getCollection(),
                 'paginator' => $this->paginator,
@@ -127,7 +164,8 @@ abstract class GridAbstract implements GridInterface
                 'use_checker' => $this->use_checker,
                 'use_filter' => $this->use_filter,  
                 'filter_fields' => $this->filter_fields, 
-            ], $this->formview);
+            ]));
+            */
     }
 
     public function setParam(string $name, $value)

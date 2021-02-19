@@ -3,57 +3,61 @@
 namespace sacrpkg\CrudBundle\Model;
 
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Routing\RouterInterface;
 
-class Paginator
+class Paginator implements PaginatorInterface
 {  
     protected $params;    
-    private $request;
-    private $items_on_page;
-    private $curr_page;
-    private $sortby;
-    private $sorttype;
-    private $sort_fields = ['id', 'uri', 'name'];
-    private $route;
-    private $total;
-    private $session;
-    private $grid;
+    protected $router;
+    protected $request;
+    protected $items_on_page;
+    protected $curr_page;
+    protected $sortby;
+    protected $sorttype;
+    protected $sort_fields = ['id', 'uri', 'name'];
+    protected $route;
+    protected $total;
+    protected $session;
+    protected $grid;
+    protected $use_paginator = true;
 
-    public function __construct (RequestStack $requestStack)
+    public function __construct (RequestStack $requestStack, RouterInterface $router)
     {
         $this->request = $requestStack->getCurrentRequest();
+        $this->router = $router;
         $this->session = $this->request->getSession();
     }
     
-    public function setGrid(GridAbstract $grid): self
+    public function setGrid(GridAbstract $grid): PaginatorInterface
     {
         $this->grid = $grid;
         
         return $this;
     }    
     
-    public function setSortFields(Array $sort_fields): self
+    public function setSortFields(Array $sort_fields): PaginatorInterface
     {
         $this->sort_fields = $sort_fields;
         
         return $this;
     }
-    
+
     public function getParam($name)
     {
         return $this->params[$name] ?? null;
     }
     
-    public function setParam($name, $value)
+    public function setParam($name, $value): PaginatorInterface
     {
         $this->params[$name] = $value;
         
         return $this;
     }
     
-    public function init($items_on_page, $sortby, $sorttype, $grid_route)
+    public function init($items_on_page, $sortby, $sorttype, $grid_route): PaginatorInterface
     {
         $p = $this->request->get('p') ?? 0;
-        $this->curr_page = $p;
+        $this->curr_page = $p ?: 0;
         $this->items_on_page = $items_on_page;
         $this->route = $grid_route;
 
@@ -73,14 +77,16 @@ class Paginator
             $this->setSession('sort_by', $this->sortby);
             $this->setSession('sort_type', $this->sorttype);
         }
+        
+        return $this;
     }
-
+    
     public function getTotal(): ?int
     {
         return $this->total;
     }
     
-    public function setTotal($total): self
+    public function setTotal($total): PaginatorInterface
     {
         $this->total = $total;
         
@@ -124,14 +130,46 @@ class Paginator
         return $this;
     }
     
+    public function isUse(): bool
+    {
+        return $this->use_paginator;
+    }
+    
+    public function getPrevUrl(): ?string
+    {
+        if ($this->curr_page == 0) {
+            return null;
+        } else {
+            return $this->router->generate($this->route, ['p' => $this->curr_page - 1]);
+        }
+    }
+    
+    public function getNextUrl(): ?string
+    {
+        if ($this->curr_page == ($this->getNumPages() - 1)) {
+            return null;
+        } else {
+            return $this->router->generate($this->route, ['p' => $this->curr_page + 1]);
+        }
+    }
+    
     protected function getSession($name)
     {
-        return $this->session->get((new \ReflectionClass($this->grid))->getShortName().'_'.$name);
+        return $this->session->get($this->getSessionPrefix().'_'.$name);
     }
     
     protected function setSession($name, $value)
     {
-        $this->session->set((new \ReflectionClass($this->grid))->getShortName().'_'.$name, $value);
+        $this->session->set($this->getSessionPrefix().'_'.$name, $value);
         return $this;
+    }
+    
+    protected function getSessionPrefix()
+    {
+        $url = $this->request->server->get('REQUEST_URI');
+        if (strpos($url, '?') !== false) {
+            $url = substr($url, 0, strpos($url, '?'));
+        }
+        return str_replace('/', '', $url).'_'.(new \ReflectionClass($this))->getShortName();
     }
 }

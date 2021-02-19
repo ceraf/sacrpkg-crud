@@ -31,7 +31,7 @@ class DoctrineReader implements ReaderInterface
                 $this->collection = $repository->getGridCollection($paginator, $filter);
             } else {
                 $this->collection = $repository->findBy([]);
-                $paginator = null;
+               // $paginator = null;
             }
         } catch (\Exception $e) {
             $this->collection = null;

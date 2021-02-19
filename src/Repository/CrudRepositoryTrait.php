@@ -4,12 +4,12 @@ namespace sacrpkg\CrudBundle\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
-use sacrpkg\CrudBundle\Model\Paginator;
-use sacrpkg\CrudBundle\Model\Filter;
+use sacrpkg\CrudBundle\Model\PaginatorInterface;
+use sacrpkg\CrudBundle\Model\FilterInterface;
 
 trait CrudRepositoryTrait
 {
-    public function getGridCollection(Paginator $paginator, Filter $filter)
+    public function getGridCollection(PaginatorInterface $paginator, FilterInterface $filter)
     {
         $this->beforeCrudCreateQueryBuilder($paginator, $filter);
         
@@ -39,7 +39,7 @@ trait CrudRepositoryTrait
         return $res;
     }
     
-    protected function getQBGrid(Filter $filter, Paginator $paginator): QueryBuilder
+    protected function getQBGrid(FilterInterface $filter, PaginatorInterface $paginator): QueryBuilder
     {
         $qb = $this->createQueryBuilder('p');
  
@@ -63,22 +63,22 @@ trait CrudRepositoryTrait
         return $qb;
     }
     
-    protected function beforeCrudCreateQueryBuilder(Paginator $paginator, Filter $filter): ServiceEntityRepository
+    protected function beforeCrudCreateQueryBuilder(PaginatorInterface $paginator, FilterInterface $filter): ServiceEntityRepository
     {
         return $this;
     }
     
-    protected function afterCrudCreateQueryBuilder(QueryBuilder $qb, Paginator $paginator, Filter $filter): QueryBuilder
+    protected function afterCrudCreateQueryBuilder(QueryBuilder $qb, PaginatorInterface $paginator, FilterInterface $filter): QueryBuilder
     {
         return $qb;
     }
     
-    protected function afterCrudApplyPaginator(QueryBuilder $qb, Paginator $paginator, Filter $filter): QueryBuilder
+    protected function afterCrudApplyPaginator(QueryBuilder $qb, PaginatorInterface $paginator, FilterInterface $filter): QueryBuilder
     {
         return $qb;
     }
     
-    protected function afterCrudApplyFilter(QueryBuilder $qb, Paginator $paginator, Filter $filter): QueryBuilder
+    protected function afterCrudApplyFilter(QueryBuilder $qb, PaginatorInterface $paginator, FilterInterface $filter): QueryBuilder
     {
         return $qb;
     }  

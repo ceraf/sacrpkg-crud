@@ -16,18 +16,18 @@ services:
         public: true
         arguments:
             - '@request_stack'
+            - '@router.default'
 
-
-    sacrpkg\CrudBundle\Model\Paginator: '@sacrpkg_crud.paginator'
+    sacrpkg\CrudBundle\Model\PaginatorInterface: '@sacrpkg_crud.paginator'
 
     sacrpkg_crud.filter:
         class: sacrpkg\CrudBundle\Model\Filter
         public: true
         arguments:
             - '@request_stack'
+            - '@router.default'
 
-
-    sacrpkg\CrudBundle\Model\Filter: '@sacrpkg_crud.filter'
+    sacrpkg\CrudBundle\Model\FilterInterface: '@sacrpkg_crud.filter'
 
     sacrpkg_crud.doctrine_reader:
         class: sacrpkg\CrudBundle\Model\Reader\DoctrineReader
@@ -37,3 +37,13 @@ services:
 
 
     sacrpkg\CrudBundle\Model\Reader\DoctrineReader: '@sacrpkg_crud.doctrine_reader'
+    
+    sacrpkg_crud.base_render:
+        class: sacrpkg\CrudBundle\Model\Render\BaseRender
+        public: true
+        arguments:
+            - '@request_stack'
+            - '@twig'
+
+
+    sacrpkg\CrudBundle\Model\Render\RenderIntarface: '@sacrpkg_crud.base_render'
