@@ -1,4 +1,14 @@
 services:
+    sacrpkg_crud.action_render:
+        class: sacrpkg\CrudBundle\Action\Render\BaseRender
+        public: true
+        arguments:
+            - '@request_stack'
+            - '@twig'
+
+
+    sacrpkg\CrudBundle\Action\Render\RenderIntarface: '@sacrpkg_crud.action_render'
+
     sacrpkg_crud.action_factory:
         class: sacrpkg\CrudBundle\Action\ActionFactory
         public: true
@@ -8,6 +18,7 @@ services:
             - '@form.factory'
             - '@router.default'
             - '@parameter_bag'
+            - '@sacrpkg_crud.action_render'
 
     sacrpkg\CrudBundle\Action\ActionFactoryInterface: '@sacrpkg_crud.action_factory'
 

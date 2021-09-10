@@ -1,0 +1,23 @@
+{% extends "Admin/grid/grid.html.twig" %}
+{% block grid_action %}
+	{% include 'Admin/grid/actions_list.html.twig' with {actions: actions, gid: gid} %}
+{% endblock %}
+{% block content_grid %}
+<div id="modal_delete_confirmation" class="modal fade" tabindex="-1">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+<div class="modal-header">
+<h5 class="modal-title">Подтвердить удаление</h5>
+<button type="button" class="close" data-dismiss="modal">&times;</button>
+</div>
+<div class="modal-body">
+<p>Вы собираетесь удалить этот элемент. Вы уверены?</p>
+</div>
+<div class="modal-footer justify-content-between">
+<button id="delete_btn" type="button" class="btn btn-outline-danger"><i class="icon-trash mr-2"></i>Удалить</button>
+<button type="button" class="btn btn-default" data-dismiss="modal">Отменить</button>
+</div>
+</div>
+</div>
+</div>
+{% endblock %}

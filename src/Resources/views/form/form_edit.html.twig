@@ -1,0 +1,109 @@
+{% extends "@SacrpkgCrud/layout.html.twig" %}
+{% block h1 %}<a href="{{ path(home_route, {'project': app.request.get('project')}) }}" class="text-default"><i class="icon-arrow-left52 mr-3"></i></a>{{ title|raw }}{% endblock %}
+{% block buttons %}
+{% if isDeleteBtn|default('') and item.id %}
+<div class="header-elements">
+    <div class="btn-group">
+    <button class="btn btn-primary btn-icon dropdown-toggle" data-toggle="dropdown"><i class="icon-gear mr-2"></i>Управление</button>
+    <div class="dropdown-menu dropdown-menu-right">
+    <a href="javascript:void(0);" data-toggle="modal" data-target="#modal_markdelete_confirmation" class="dropdown-item"><i class="icon-trash"></i>Удалить</a>
+    </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+{% block breadcrumb %}
+{% if breadcrumb %}
+    <div class="breadcrumb-line breadcrumb-line-light">
+        <div class="d-flex">
+            <div class="breadcrumb">
+                <a href="/" class="breadcrumb-item"><i class="icon-home2 mr-2"></i>Главная</a>
+                {% for key, item in breadcrumb %}
+                    {% if item == 'javascript:void(0)' %}
+                        <a href="{{ item }}" class="breadcrumb-item">{{ key }}</a>
+                    {% elseif item is iterable %}
+                        <a href="{{ path(item['route'], item['param']) }}" class="breadcrumb-item">{{ key }}</a>
+                    {% elseif item %}
+                        <a href="{{ path(item, {'project': app.request.get('project')}) }}" class="breadcrumb-item">{{ key }}</a>
+                    {% else %}
+                        <span class="breadcrumb-item active">{{ key }}</span>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endif %}
+{% endblock %} 
+{% block content %}
+    {% block before_form %}{% endblock %}
+	{% form_theme form '@SacrpkgCrud/form/single_form.html.twig' %}
+	<form action="" method="POST" enctype="multipart/form-data" >
+		{{ form_errors(form) }}
+
+		<div class="card">
+            <div class="card-header">
+                <h6 class="font-weight-semibold mb-0">Настройки</h6>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="bg-light">
+                        <tr>
+                            <th width="450">Параметр</th>
+                            <th>Значение</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% block before_adw_fields %}{% endblock %}
+                        {{ form_widget(form) }}
+                        {% block adw_fields %}{% endblock %}
+                    </tbody>
+                </table>
+            </div>            
+        </div>
+        
+        {% block translate_fields_block %}
+        {% if use_tranclate_fields|default('') %}
+        <div class="card">
+            <div class="card-header">
+                <h6 class="font-weight-semibold mb-0">Переводы</h6>
+            </div>
+            <div class="card-body">
+                {% include '@SacrpkgCrud/form/translate_fields.html.twig' with {item: item} %}
+            </div>
+        </div>
+        {% endif %}
+        {% endblock %}
+        {% block dynamic_fields_block %}{% endblock %}
+            
+        <div class="my-5 d-flex justify-content-between align-items-center">
+                <button type="submit" name="save" value="1" class="btn btn-success btn-lg">Сохранить</button>
+				{% if home_params|default('') %}
+				<a href="{{ path(home_route, home_params) }}" class="btn btn-light">Отменить</a>
+				{% else %}
+				<a href="{{ path(home_route, {'project': app.request.get('project')}) }}" class="btn btn-light">Отменить</a>
+				{% endif %}
+        </div>
+
+
+ <!-- Delete confirmation modal -->
+<div id="modal_markdelete_confirmation" class="modal fade" tabindex="-1">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+<div class="modal-header">
+<h5 class="modal-title">Подтвердить удаление</h5>
+<button type="button" class="close" data-dismiss="modal">&times;</button>
+</div>
+<div class="modal-body">
+<p>Вы собираетесь удалить этот объект. Вы уверены?</p>
+</div>
+<div class="modal-footer justify-content-between">
+<button type="submit" name="markdelete" value="1" class="btn btn-outline-danger"><i class="icon-trash mr-2"></i>Удалить</button>
+<button type="button" class="btn btn-default" data-dismiss="modal">Отменить</button>
+</div>
+</div>
+</div>
+</div>
+<!-- /Delete confirmation modal -->        
+	</form>
+	{% block after_form %}{% endblock %}
+{% endblock %}

@@ -1,14 +1,34 @@
 <?php
 
+/*
+ * This file is part of the Sacrpkg CrudBundle package.
+ *
+ * (c) Oleg Bruyako <jonsm2184@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace sacrpkg\CrudBundle\Action;
 
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\HttpFoundation\Request;
 
+/**
+ * Add action for more items.
+ */
 class AddMoreAction extends ActionAbstract
 {
+    /**
+     * Function for process with each item.
+     *
+     * @var function
+     */ 
     protected $rowprocess;
     
+    /**
+     * {@inheritdoc}
+     */
     public function execute($params = [])
     {
         $isRedirect = true;
@@ -80,13 +100,6 @@ class AddMoreAction extends ActionAbstract
                         $isSuccess = false;
                         $this->flashMessage('error', $e->getMessage());
                     }
-                    /*
-                    if ($isSuccess)
-                        $this->afterSaveExecute($this->em, $row);
-                    
-                    if ($isRedirect)
-                        return $this->redirectToRoute($this->homeroute);
-                    */
                 }
             }
         } 
@@ -97,12 +110,29 @@ class AddMoreAction extends ActionAbstract
         ]);
     }
     
+    /**
+     * Set function for process with each item.
+     *
+     * @param function $rowprocess
+     *
+     * @return $this
+     */
     public function setRowProcess($rowprocess): self
     {
         $this->rowprocess = $rowprocess;
         return $this;
     }
     
+    /**
+     * Set function for process with each item.
+     *
+     * @param EntityManager $em
+     * @param object $row
+     * @param Request $request
+     * @param array $line
+     *
+     * @return void
+     */
     private function defaultRowProcess(EntityManager $em, $row, Request $request, $line)
     {
         $line = str_replace("\r", '', $line);
@@ -128,6 +158,13 @@ class AddMoreAction extends ActionAbstract
         $row->addTranslate($langtempl);        
     }
     
+    /**
+     * Prepare uri.
+     *
+     * @param string $str
+     *
+     * @return string
+     */
     private function prepareUri(string $str): string
     {
         return preg_replace('/[^a-z0-9\-]/', '', trim(strtolower($str)));

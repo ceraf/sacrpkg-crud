@@ -1,0 +1,157 @@
+{% extends "@SacrpkgCrud/layout.html.twig" %}
+
+{% block h1 %}{{ title|raw }}{% endblock %}
+
+{% block breadcrumb %}
+{% include '@SacrpkgCrud/grid/breadcrumb.html.twig' %}
+{% endblock %} 
+
+{% block buttons %}
+{% if buttons %}
+<div class="header-elements">
+	{% for btn in buttons %}
+		{% if btn['type']|default('') == 'menu' %}
+            <div class="{{ btn['class']|default('') }}">
+            <button class="{{ btn['btnstyle']|default('') }}" data-toggle="dropdown"><i class="{{ btn['icon']|default('') }}"></i>{{ btn['title'] }}</button>
+            <div class="dropdown-menu dropdown-menu-right">
+            {% for subbtn in btn['buttons'] %}
+                {% if subbtn['method']|default('') == 'POST' %}
+                    <a title="{{ subbtn['title'] }}" rel="multiple_btn" href="javascript:void(0)" rel-href="{{ path(subbtn['route'], {'project': app.request.get('project'), action: subbtn['action']}) }}" class="dropdown-item" >{{ subbtn['title'] }}</a>
+                {% else %}
+                    <a title="{{ subbtn['title'] }}" href="{{ path(subbtn['route'], {'project': app.request.get('project')}) }}" class="dropdown-item" >{{ subbtn['title'] }}</a>
+                {% endif %}
+            {% endfor %}
+            </div>
+            </div>    
+		{% elseif btn['action']|default('') %}
+			<a title="{{ btn['title'] }}" href="{{ path(btn['route'], {action: btn['action']}) }}" class="{{ btn['btnstyle'] }}" >{% if btn['icon'] %}<i class="{{ btn['icon'] }}"></i>{% endif %}{{ btn['title'] }}</a>&nbsp;
+		{% else %}
+			<a title="{{ btn['title'] }}" href="{{ path(btn['route']) }}" class="{{ btn['btnstyle'] }}" >{% if btn['icon'] %}<i class="{{ btn['icon'] }}"></i>{% endif %}{{ btn['title'] }}</a>&nbsp;
+		{% endif %}
+	{% endfor %}
+</div>
+{% endif %}
+{% endblock %}
+{% block content %}
+{% if rows %}
+<div class="card">
+	{% block grid_header %}{% endblock %}
+	<div class="table-responsive">
+
+	<table class="table table-hover">
+		<thead class="bg-light">
+                <tr>
+                    {% if use_checker|default('') %}<th width="70"><input type="checkbox" id="grid_all_check" class="form-check-input-styled" data-fouc></th>{% endif %}
+                    {% for field in fields %}
+						{% if (field['sortable']) %}
+							<th {% if field['style']|default('0') %}style="{{ field['style'] }}"{% endif %} {% if (paginator.sortby|lower == field['name']) %}class="sorting_{{ paginator.sorttype|lower }}"{% endif %} ><a {% if (field['sortable']) %}sort-by="{{ field['name'] }}"{% endif %} href="javascript:void(0)">{{ field['label'] }}</a></th>
+						{% else %}
+							<th {% if field['style']|default('0') %}style="{{ field['style'] }}"{% endif %}>{{ field['label'] }}</th>
+						{% endif %}
+                    {% endfor %}
+                    {% if actions %}
+						<th style="width:50px;"></th>
+                    {% endif %}
+                </tr>	
+		</thead>
+
+		<tbody>
+										{% for key, item in rows %}
+                                        <tr class="{% if linestyles %}{{ linestyles['values'][attribute(item, linestyles['field'])]|default('') }}{% endif %}" >
+                                            {% if use_checker|default('') %}<td><input type="checkbox" rel="grid_line_check" rel-id="{{ item.id }}" class="form-check-input-styled" data-fouc></td>{% endif %}
+                                            {% for field in fields %}
+                                                {% if field['type']|default('') and block("table_row_" ~ field['type']) is defined %}
+                                                    {{ block("table_row_" ~ field['type']) }}
+												{% else %}
+                                                    {{ block('table_row') }}
+                                                {% endif %}
+                                            {% endfor %}       
+                                            {% if actions %}
+												{% block grid_action %}
+													{% if edit_only %} 
+														{% include '@SacrpkgCrud/grid/actions.html.twig' with {actions: actions} %}
+													{% else %}
+														{% include '@SacrpkgCrud/grid/actions_list.html.twig' with {actions: actions} %}
+													{% endif %}
+												{% endblock %}
+											{% endif %}
+                                        </tr>
+										{% endfor %}
+			<tr>
+            {% block sumlines %}{% endblock %}
+		</tbody>
+	</table>
+	</div>
+            {% if paginator and paginator.use %}
+                {% block paginator_body %}
+                    {% include '@SacrpkgCrud/grid/paginator_body.html.twig' with {paginator: paginator} %}
+                {% endblock %}
+            {% endif %}
+</div>
+
+
+            
+            <!-- /.row -->
+
+
+
+
+        <!-- /#page-wrapper -->
+		{% block content_grid %}{% endblock %}
+{% endif %}
+
+{% endblock %}
+
+{% block sidebar %}
+    {% if filter.usefilter|default('') and filter.settings %}
+    {% include '@SacrpkgCrud/grid/sidebar.html.twig' with {filter: filter} %}
+    {% endif %}
+{% endblock %}
+
+{% block table_row_bool %}
+    <td {% if field['class']|default('') %}class="{{ field['class'] }}"{% endif %}><span class="badge badge-{% if attribute(item, field['name']) == true %}success{% else %}danger{% endif %}">{% if attribute(item, field['name']) == true %}есть{% else %}нет{% endif %}</span></td>
+{% endblock %}
+
+{% block table_row_active %}
+    <td {% if field['class']|default('') %}class="{{ field['class'] }}"{% endif %}><span class="badge badge-flat border-{% if attribute(item, field['name']) == true %}success text-success{% else %}grey-300 text-grey-600{% endif %}">{% if attribute(item, field['name']) == true %}активен{% else %}не активен{% endif %}</span></td>
+{% endblock %}
+
+{% block table_row_select %}
+    <td {% if field['class']|default('') %}class="{{ field['class'] }}"{% endif %}>{{ field['custom_styles'][attribute(item, field['name'])]['title']|default('') }}</td>
+{% endblock %}
+
+
+{% block table_row_custom_style %}
+    <td {% if field['class']|default('') %}class="{{ field['class'] }}"{% endif %}><span class="{{ field['custom_styles'][attribute(item, field['name'])]['style'] }}">{{ field['custom_styles'][attribute(item, field['name'])]['title'] }}</span></td>
+{% endblock %}
+
+{% block table_row_price %}
+    <td {% if field['class']|default('') %}class="{{ field['class'] }}"{% endif %}>{% if attribute(item, field['name']) %}{{ attribute(item, field['name'])|number_format(2, '.', ' ')  }}{% if field['currency'] %} {{ field['currency'].code }}{% endif %}{% else %}-{% endif %}</td>
+{% endblock %}
+
+{% block table_row_url %}
+    <td {% if field['class']|default('') %}class="{{ field['class'] }}"{% endif %}><a href="{{ path(field['href'], {'project': app.request.get('project')}) }}">{{ attribute(item, field['name'])|raw }}</a></td>
+{% endblock %}
+
+{% block table_row_route_action %}
+                                                {% if field['param_name']|default('') %}
+                                                {% set param_name = field['param_name'] %}
+                                                {% set param_value = field['param_value'] %}
+                                                {% else %}
+                                                {% set param_name = 'id' %}
+                                                {% set param_value = 'id' %}
+                                                {% endif %}
+												<td {% if field['class']|default('') %}class="{{ field['class'] }}"{% endif %}><a class="text-default" {% if field['target_blank']|default('') %}target="_blank"{% endif %} href="{{ path(field['route'], {'project': app.request.get('project'), action: field['action'], (param_name): attribute(item, param_value)|default(0)}) }}">{{ attribute(item, field['name'])|raw }}</a></td>
+{% endblock %}
+
+{% block table_row_exturl %}
+    <td {% if field['class']|default('') %}class="{{ field['class'] }}"{% endif %}><a class="text-default" {% if field['target_blank']|default('') %}target="_blank"{% endif %} href="{{ field['href'] ~ attribute(item, field['name']) }}">{{ attribute(item, field['name'])|raw }}</a></td>
+{% endblock %}
+
+{% block table_row_icon %}
+    <td {% if field['class']|default('') %}class="{{ field['class'] }}"{% endif %}><i class="{{ field['icons'][attribute(item, field['name'])] }}"></i></td>
+{% endblock %}
+
+{% block table_row %}
+    <td {% if field['class']|default('') %}class="{{ field['class'] }}"{% endif %}>{{ attribute(item, field['name'])|raw }}</td>
+{% endblock %}

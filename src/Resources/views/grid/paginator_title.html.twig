@@ -1,0 +1,11 @@
+                <div class="col-sm-6">
+                    <div class="dataTables_length" id="dataTables-example_length">
+                        <form method="POST" action="{{ path(grid_route, {'project': app.request.get('project')}) }}"><label>Показывать <select onChange="$(this).parent().parent().submit()" name="page_count" aria-controls="dataTables-example" class="form-control input-sm">
+                            {% for num in paginator.optnumpages %}
+                                <option {% if paginator.itemsonpage == num %}selected="selected"{% endif %} value="{{ num }}">{{ num }}</option>
+                            {% endfor %}
+                        </select> строк</label></form>
+                    </div>
+                </div>
+
+             

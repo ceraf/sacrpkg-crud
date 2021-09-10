@@ -1,8 +1,18 @@
 <?php
 
+/*
+ * This file is part of the Sacrpkg CrudBundle package.
+ *
+ * (c) Oleg Bruyako <jonsm2184@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace sacrpkg\CrudBundle\Model;
 
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -10,6 +20,9 @@ use Symfony\Component\Routing\RouterInterface;
 use sacrpkg\CrudBundle\Model\Reader\ReaderInterface;
 use sacrpkg\CrudBundle\Model\Render\RenderIntarface;
 
+/**
+ * Abstract grid.
+ */
 abstract class GridAbstract implements GridInterface
 {
     const SESSION_COUNT_ITEMS = 'numitems';
@@ -17,47 +30,209 @@ abstract class GridAbstract implements GridInterface
     const SESSION_SORT_TYPE = 'sort_type';
     const SESSION_FILTER = 'filter';
     
+    /**
+     * Field name for default sort.
+     *
+     * @var string
+     */
 	protected $sortfield_default = 'id';
+    
+    /**
+     * Default sort type.
+     *
+     * @var string
+     */
 	protected $sorttype_default = 'DESC';
-    private $session;
-    protected $controller;
+    
+    /**
+     * Default sort type.
+     *
+     * @var SessionInterface
+     */
+    protected $session;
+    
+    /**
+     * Entity class name.
+     *
+     * @var string
+     */    
     protected $entityname;
+    
+    /**
+     * Rows from database. 
+     *
+     * @var array
+     */    
     protected $collection;
+    
+    /**
+     * Paginator object. 
+     *
+     * @var PaginatorInterface
+     */       
     protected $paginator;
+    
+    /**
+     * Paginator object. 
+     *
+     * @var array
+     */  
     protected $fields;
+    
+    /**
+     * Actions for each line.
+     *
+     * @var array
+     */    
     protected $actions;
+    
+    /**
+     * Buttons for grid.
+     *
+     * @var array
+     */     
     protected $buttons;
+    
+    /**
+     * Route name for grid actions.
+     *
+     * @var string
+     */     
     protected $action_route;
+    
+    /**
+     * Route name for add new line to grid.
+     *
+     * @var string
+     */    
 	protected $add_route;
+    
+    /**
+     * Route name for grid list.
+     *
+     * @var string
+     */ 
     protected $grid_route;
+    
+    /**
+     * Grid title.
+     *
+     * @var string
+     */     
     protected $title = 'Grid';
+    
+    /**
+     * Request data.
+     *
+     * @var RequestStack
+     */       
     protected $request;
+    
+    /**
+     * Number line on page.
+     *
+     * @var int
+     */     
     protected $itemsonpage = 50;
+    
+    /**
+     * Options for the number of lines per page.
+     *
+     * @var array
+     */  
     protected $optnumpages = [20,50,100,200];
-    protected $sortby;
-    protected $sorttype;
-    protected $search;
+    
+    /**
+     * Filter data for defaule.
+     *
+     * @var array
+     */  
     protected $filterdata;
+    
+    /**
+     * Custom settings for each line.
+     *
+     * @var array
+     */ 
     protected $linestyles;
+    
+    /**
+     * Custom grid parameters.
+     *
+     * @var array
+     */    
 	protected $params;
+    
+    /**
+     * Path to template file.
+     *
+     * @var string
+     */       
 	protected $formview;
+    
+    /**
+     * Breadcrumb array.
+     *
+     * @var array
+     */      
 	protected $breadcrumb;
+    
+    /**
+     * Flag for use paginator.
+     *
+     * @var bool
+     */     
 	protected $use_paginator = true;
+    
+    /**
+     * Flag to set actions icon for each line.
+     *
+     * @var bool
+     */
 	protected $edit_only = false;
-    protected $use_filter = false;
+    
+    /**
+     * Filter fields.
+     *
+     * @var array
+     */    
     protected $filter_fields = null;
+    
+    /**
+     * Flag to use checkbox befor each line.
+     *
+     * @var bool
+     */     
     protected $use_checker = false;
+    
+    /**
+     * History messages.
+     *
+     * @var array
+     */     
     protected $messages;
-    protected $em;
+    
+    /**
+     * Object for get data from database.
+     *
+     * @var ReaderInterface
+     */      
     protected $reader;
+    
+    /**
+     * @var RouterInterface
+     */
     protected $router;
+    
+    /**
+     * @var RenderIntarface
+     */
     protected $render;
 
-    public function __construct(RequestStack $requestStack, ManagerRegistry $doctrine, ReaderInterface $reader,
+    public function __construct(RequestStack $requestStack, ReaderInterface $reader,
             PaginatorInterface $paginator, RouterInterface $router, FilterInterface $filter, RenderIntarface $render)
     { 
         $this->request = $requestStack->getCurrentRequest();
-        $this->em = $doctrine->getManager();
         $this->session = $this->request->getSession();
         $this->paginator = $paginator;
         $this->router = $router;
@@ -74,42 +249,60 @@ abstract class GridAbstract implements GridInterface
         $this->afterInit();
  
     }
-    
-    public function setController(AbstractController $controller): self
-    {
-        $this->controller = $controller;
-        
-        return $this;
-    }
-    
+
+    /**
+     * {@inheritdoc}
+     */
     public function getFields(): Array
     {
         return $this->fields;
     }
     
-    protected function afterInit(): self
-    {
-        return $this;
-    }
-    
-    public function setEntity($entity)
+    /**
+     * {@inheritdoc}
+     */
+    public function setEntity(string $entity): GridInterface
     {
         $this->entityname = $entity;
         return $this;
-    }
+    }    
     
-	public function setFilter($data)
+    /**
+     * {@inheritdoc}
+     */
+	public function setFilter(Array $data): GridInterface
 	{
 		$this->filterdata = $data;
 		return $this;
+	}    
+    
+    /**
+     * {@inheritdoc}
+     */
+    public function setParam(string $name, $value): GridInterface
+    {
+        $this->params[$name] = $value;
+        return $this;
+    }	
+    
+    /**
+     * {@inheritdoc}
+     */
+	public function setFormView(string $formview): GridInterface
+	{
+		$this->formview = $formview;
+		return $this;
 	}
-	
-    public function getResponse()
+    
+    /**
+     * {@inheritdoc}
+     */
+    public function getResponse(): Response
     {
         if (!$this->collection)
             $this->fetch();
             
-        $formview = $this->formview ?: 'Admin/grid/grid.html.twig';
+        $formview = $this->formview ?: '@SacrpkgCrud/grid/grid.html.twig';
         
         return $this->render->setCollection($this->collection)
                     ->setActions($this->actions)
@@ -118,63 +311,33 @@ abstract class GridAbstract implements GridInterface
                     ->setPaginator($this->paginator)
                     ->setFilter($this->filter)
                     ->setParams([
-                       // 'grid_route' => $this->grid_route,
-
                             'title' => $this->title,
-                       //     'sortby' => $this->sortby,
-                       //     'sorttype' => strtolower($this->sorttype),
-                       //     'search' => $this->search,
-                       
-                            
                             'linestyles' => $this->linestyles,
                             'params' => $this->params,
                             'breadcrumb' => $this->breadcrumb,
-                        //    'use_paginator' => $this->use_paginator,
                             'edit_only' => $this->edit_only,
                             'action_route' => $this->action_route,
                             'use_checker' => $this->use_checker,
-                      //     'usefilter' => $this->usefilter,      
-                      //      'use_filter' => $this->use_filter,  
-                      //      'filter_fields' => $this->filter_fields, 
                     ])
-                    ->getReResponse($formview);
-            /*
-
-            
-        return new Response( $this->twig->render($formview,
-            [
-                'rows' => $this->getCollection(),
-                'paginator' => $this->paginator,
-                'grid_route' => $this->grid_route,
-                'fields' => $this->fields,
-                'actions' => $this->actions,
-                'buttons' => $this->buttons,
-                'title' => $this->title,
-                'sortby' => $this->sortby,
-                'sorttype' => strtolower($this->sorttype),
-                'search' => $this->search,
-                'usefilter' => $this->usefilter,
-                'filter' => $this->filter->getData(),
-                'linestyles' => $this->linestyles,
-				'params' => $this->params,
-				'breadcrumb' => $this->breadcrumb,
-				'use_paginator' => $this->use_paginator,
-				'edit_only' => $this->edit_only,
-				'action_route' => $this->action_route,
-                'use_checker' => $this->use_checker,
-                'use_filter' => $this->use_filter,  
-                'filter_fields' => $this->filter_fields, 
-            ]));
-            */
+                    ->getResponse($formview);
+    }
+    
+    /**
+     * After init grid event.
+     *
+     * @return $this
+     */
+    protected function afterInit(): GridInterface
+    {
+        return $this;
     }
 
-    public function setParam(string $name, $value)
-    {
-        $this->params[$name] = $value;
-        return $this;
-    }	
-	
-    protected function getCollection()
+    /**
+     * Get rows from database.
+     *
+     * @return array
+     */
+    protected function getCollection(): ?array
     {
         if (is_null($this->collection))
             $this->fetch();
@@ -182,7 +345,12 @@ abstract class GridAbstract implements GridInterface
         return $this->collection;
     }
     
-    protected function init()
+    /**
+     * Initialization grid.
+     *
+     * @return void
+     */
+    protected function init(): void
     {
         $this->usefilter = false;
         $this->actions['edit'] = [
@@ -203,95 +371,71 @@ abstract class GridAbstract implements GridInterface
 			'icon' => 'icon-plus-circle2 mr-2'
         ];
     }
-    
-	public function setFormView($formview)
-	{
-		$this->formview = $formview;
-		return $this;
-	}
-	
-    protected function getGridSession($name)
+
+    /**
+     * Get grid data from session.
+     *
+     * @param string $name Parameter name
+     *
+     * @return mixed
+     */
+    protected function getGridSession(string $name)
     {
-        return $this->session->get((new \ReflectionClass($this))->getShortName().'_'.$name);
+        return $this->session->get($this->getSessionPrefix().'_'.$name);
     }
     
-    protected function setGridSession($name, $value)
+    /**
+     * Set grid data to session.
+     *
+     * @param string $name Parameter name
+     * @param string $value Parameter value
+     *
+     * @return GridInterface
+     */
+    protected function setGridSession($name, $value): GridInterface
     {
-        $this->session->set((new \ReflectionClass($this))->getShortName().'_'.$name, $value);
+        $this->session->set($this->getSessionPrefix().'_'.$name, $value);
         return $this;
     }
-    
-    protected function getPaginator($total, Request $request)
-    {
-        $p = $request->get('p') ?? '0';
-        $count = ($request->get('page_count')) ?? null;
-        if ($count && in_array($count, $this->optnumpages)) {
-            $this->setGridSession(self::SESSION_COUNT_ITEMS, $count); //$this->session->set((new \ReflectionClass($this))->getShortName().'_'.self::SESSION_COUNT_ITEMS, $count);
-            $this->itemsonpage = $count;
+
+    /**
+     * Get grid session prefix.
+     *
+     * @return string
+     */
+    protected function getSessionPrefix(): string
+    { 
+        $url = $this->request->server->get('REQUEST_URI');
+        if (strpos($url, '?') !== false) {
+            $url = substr($url, 0, strpos($url, '?'));
         }
-        
-        if (!$total)
-            return null;
-        
-        $paginator = new \stdClass;
-        $paginator->total = $total;
-        $paginator->optnumpages = $this->optnumpages;
-        $paginator->currpage = $p;
-        $paginator->numpages = ceil($paginator->total/$this->itemsonpage);
-        $paginator->itemsonpage = $this->itemsonpage;
-        $paginator->route = $this->grid_route;
-
-        return $paginator;        
-    }
-    
-    protected function initSort(): void
-    {
-        $this->sortby = ($this->getGridSession('sort_by')) ?? $this->sortfield_default;
-        $this->sorttype = ($this->getGridSession('sort_type')) ?? $this->sorttype_default;
-        if ($this->request->get('sort_by') &&
-                in_array($this->request->get('sort_by'), array_keys(array_filter($this->fields, 
-                    function($item){
-                        return $item['sortable'] ?? false;}
-                    ))
-                )) {
-            if ($this->sortby == $this->request->get('sort_by'))
-                $this->sorttype = ($this->sorttype == 'ASC') ? 'DESC' : 'ASC';       
-            $this->sortby = $this->request->get('sort_by');
-            $this->setGridSession(self::SESSION_SORT_BY, $this->sortby);
-            $this->setGridSession(self::SESSION_SORT_TYPE, $this->sorttype);
-        }  
+        return str_replace('/', '', $url).'_'.(new \ReflectionClass($this))->getShortName();
     }
 
-    protected function initSearch(): void
-    {
-		$currfilter = $this->filterdata;
-        $this->search = strtolower($this->request->get('search') ?? null);
-        if ($this->request->get('filter_apply', null)) {
-            $filter = $this->request->get('filter');
-            $this->setGridSession(self::SESSION_FILTER, $filter);
-        } elseif ($this->request->get('filter_reset', null)) {
-            $filter = null;
-            $this->setGridSession(self::SESSION_FILTER, $filter);
-        } else
-            $filter = ($this->getGridSession(self::SESSION_FILTER)) ?? null;
-        $this->filterdata = $filter;
-		if ($currfilter) {
-			if (is_array($this->filterdata))
-				$this->filterdata = array_merge($this->filterdata, $currfilter);
-			else
-				$this->filterdata = $currfilter;
-		}
-    }
-
-    protected function beforeGetCollection()
+    /**
+     * Before get rows from database.
+     *
+     * @return void
+     */
+    protected function beforeGetCollection(): void
     {
     }
 
-    protected function afterGetCollection()
+    /**
+     * After get rows from database.
+     *
+     * @return void
+     */
+    protected function afterGetCollection(): void
     {
     }
     
-    protected function fetch()
+    /**
+     * Fetch data from database.
+     *
+     * @return $this
+     */
+    protected function fetch(): GridInterface
     {
         $this->filter->init($this->filter_fields, $this->filterdata);
         try {     
@@ -303,44 +447,22 @@ abstract class GridAbstract implements GridInterface
             $this->collection = null;
             $this->flashMessage('error', $e->getMessage());
         }
-        /*
-        $this->initSearch();
 
-
-            $repository = $this->em->getRepository($this->entityname);
-                            
-            if (method_exists($repository, 'getByPage')) {
-                $this->beforeGetCollection();
-
-                $items = $repository->getGridCollection((clone $this->paginator)->incPage(), $this->filter ?? []);
-                $total = ($this->paginator->getCurrPage()+1)*$this->paginator->getItemsOnPage() + count($items ?? []);
-
-                $this->paginator->setTotal($total);
-
-                $this->collection = $repository->getGridCollection($this->paginator, $this->filter ?? []);
-                $this->afterGetCollection(); 
-            } else {
-                $this->collection = $repository->findBy([]);
-                $this->paginator = null;
-            }
-        } catch (Exception $e) {
-            $this->collection = null;
-            $this->flashMessage('error', $e->getMessage());
-        }
-        */
-        
-        
-        
-        
         return $this;
     }
-    
-    protected function flashMessage($type, $mes): self
+
+    /**
+     * Add message to session flash.
+     *
+     * @param string $type Type message
+     * @param string $mes Message text
+     *
+     * @return $this
+     */
+    protected function flashMessage(string $type, string $mes): GridInterface
     {
         $messages[] = ['type' => $type, 'mes' => $mes];
-        if (method_exists($this->controller, 'displayMessage')) {
-            $this->controller->displayMessage($type, $mes);
-        }
+        $this->session->getFlashBag()->add($type, $mes);
         
         return $this;
     }

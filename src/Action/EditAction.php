@@ -1,11 +1,26 @@
 <?php
 
+/*
+ * This file is part of the Sacrpkg CrudBundle package.
+ *
+ * (c) Oleg Bruyako <jonsm2184@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace sacrpkg\CrudBundle\Action;
 
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Edit action for more items.
+ */
 class EditAction extends ActionAbstract
 {
+    /**
+     * {@inheritdoc}
+     */
     public function execute($params = [])
     {
         $id = $params['id'];
@@ -71,6 +86,13 @@ class EditAction extends ActionAbstract
         ]);
     }
     
+    /**
+     * Mark delete item.
+     *
+     * @param array $params
+     *
+     * @return Response
+     */
     protected function markdelete($params)
     {
         $id = $params['id'];

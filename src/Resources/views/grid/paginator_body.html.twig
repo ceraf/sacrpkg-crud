@@ -1,0 +1,8 @@
+{% if paginator.numpages > 1 %}
+<div class="card-footer pt-5 bg-white d-sm-flex border-top-0">
+<ul class="pagination pagination-sm pagination-pager pagination-pager justify-content-between">
+<li class="page-item {% if not paginator.prevurl %}disabled{% endif %}"><a class="page-link" href="{% if not paginator.prevurl %}javascript:void(0){% else %}{{ paginator.prevurl }}{% endif %}">&larr; Предыдущая</a></li>
+<li class="page-item {% if not paginator.nexturl %}disabled{% endif %}"><a class="page-link" href="{% if not paginator.nexturl %}javascript:void(0){% else %}{{ paginator.nexturl  }}{% endif %}">Следующая &rarr;</a></li>
+</ul>
+</div>
+{% endif %}

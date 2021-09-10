@@ -1,0 +1,9 @@
+parameters:
+    crud_actions:
+        add:
+            class: sacrpkg\CrudBundle\Action\AddAction
+        edit:
+            class: sacrpkg\CrudBundle\Action\EditAction
+        delete:
+            class: sacrpkg\CrudBundle\Action\DeleteAction
+
