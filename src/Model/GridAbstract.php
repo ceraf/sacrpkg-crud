@@ -229,7 +229,12 @@ abstract class GridAbstract implements GridInterface
      */
     protected $render;
 
-    public function __construct(RequestStack $requestStack, ReaderInterface $reader,
+    /**
+     * @var ManagerRegistry
+     */
+    protected $doctrine;
+
+    public function __construct(RequestStack $requestStack, ReaderInterface $reader, ManagerRegistry $doctrine,
             PaginatorInterface $paginator, RouterInterface $router, FilterInterface $filter, RenderIntarface $render)
     { 
         $this->request = $requestStack->getCurrentRequest();
@@ -238,6 +243,7 @@ abstract class GridAbstract implements GridInterface
         $this->router = $router;
         $this->reader = $reader;
         $this->filter = $filter;
+        $this->doctrine = $doctrine;
         
         $this->render = $render;
         

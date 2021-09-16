@@ -23,7 +23,7 @@ use sacrpkg\CrudBundle\Model\Render\RenderIntarface;
  */
 abstract class BaseGrid extends GridAbstract
 {
-    public function __construct(RequestStack $requestStack, DoctrineReader $reader,
+    public function __construct(RequestStack $requestStack, DoctrineReader $reader, ManagerRegistry $doctrine,
             PaginatorInterface $paginator, RouterInterface $router, FilterInterface $filter, RenderIntarface $render)
     { 
         parent::__construct($requestStack, $reader, $paginator,
