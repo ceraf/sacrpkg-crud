@@ -1,0 +1,75 @@
+{% set fields_tr = tmp_tr_fields|default([]) %}
+<div class="card-body">
+{% if item.translates|default('') %}
+{% for key, tr in item.translates %}
+<div class="form-group row" rel-id="{{ tr.id }}">
+<div class="col-md-2">
+{% if fields_tr[tr.id]['lang']|default('') %}
+{% set lang_id = fields_tr[tr.id]['lang'] %}
+{% else %}
+{% set lang_id = tr.language %}
+{% endif %}
+<select rel="lang" rel-id="{{ lang_id }}" data-placeholder="Язык" required class="form-control select" rel="lang" name="fields_tr[{{ tr.id }}][lang]" data-fouc>
+<option></option>
+</select>
+</div>
+<div class="col-md-10">
+<div class="input-group">
+{% for field_title, field_name in translate_fields %}
+<input type="text" class="form-control"  value="{% if fields_tr[tr.id][field_name]|default('') %}{{ fields_tr[tr.id][field_name] }}{% else %}{{ attribute(tr, field_name) }}{% endif %}" placeholder="{{ field_title }}" rel="{{ field_name }}" name="fields_tr[{{ tr.id }}][{{ field_name }}]">
+{% endfor %}
+<span class="input-group-append" rel="actionbtn">
+<button type="button" rel="delete_tr" class="btn btn-light btn-icon"><i class="icon-subtract"></i></button>
+</span>
+</div>
+</div>
+</div>
+{% endfor %}
+{% endif %}
+{% set startkey = 1 %}
+{% if fields_tr['new']|default('') %}
+{% for key, tr in fields_tr['new'] %}
+{% if tr['lang']|default('') %}
+{% set startkey = key + 1 %}
+<div class="form-group row" rel-id="{{ key }}">
+<div class="col-md-2">
+<select rel-type="lang" rel-id="{{ tr['lang'] }}" data-placeholder="Язык" class="form-control select" rel="lang" name="fields_tr[new][{{ key }}][lang]" data-fouc>
+<option></option>
+</select>
+</div>
+<div class="col-md-10">
+<div class="input-group">
+{% for field_title, field_name in translate_fields %}
+<input rel-type="dynamic_field" type="text" class="form-control" value="{{ tr[field_name] }}" placeholder="{{ field_title }}" rel="{{ field_name }}" name="fields_tr[new][{{ key }}][{{ field_name }}]">
+{% endfor %}
+<span class="input-group-append" rel="actionbtn">
+<button type="button" rel="delete_tr" class="btn btn-light btn-icon"><i class="icon-subtract"></i></button>
+</span>
+</div>
+</div>
+</div>
+{% endif %}
+{% endfor %}
+{% endif %}
+<div class="form-group row" rel-id="{{ startkey }}">
+<div class="col-md-2">
+<select rel-type="lang" data-placeholder="Язык" class="form-control select" rel="lang" name="fields_tr[new][{{ startkey }}][lang]" data-fouc>
+<option></option>
+</select>
+</div>
+<div class="col-md-10">
+<div class="input-group">
+{% for field_title, field_name in translate_fields %}
+<input rel-type="dynamic_field" type="text" class="form-control" placeholder="{{ field_title }}" rel="{{ field_name }}" name="fields_tr[new][{{ startkey }}][{{ field_name }}]">
+{% endfor %}
+<span class="input-group-append" rel="actionbtn">
+<button type="button" class="btn btn-light btn-icon" id="add_field_tr"><i class="icon-add"></i></button>
+</span>
+</div>
+</div>
+</div>
+</div>
+
+<input type="hidden" id="default_lang_id" value="{{ default_lang_id }}">
+
+<script type="text/javascript" src="{{ asset('/assets/js/translate.js') }}"></script> 

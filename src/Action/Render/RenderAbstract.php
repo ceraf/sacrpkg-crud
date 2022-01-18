@@ -9,10 +9,8 @@
  * file that was distributed with this source code.
  */
 
-namespace sacrpkg\CrudBundle\Model\Render;
+namespace sacrpkg\CrudBundle\Action\Render;
 
-use sacrpkg\CrudBundle\Model\Paginator;
-use sacrpkg\CrudBundle\Model\Filter;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -34,14 +32,25 @@ abstract class RenderAbstract implements RenderIntarface
     {
         $this->request = $requestStack->getCurrentRequest();
         $this->twig = $twig;
-    }
+    }    
     
     public function setParams(?array $params): RenderIntarface
     {
         $this->params = $params;
         
         return $this;
-    }    
+    }     
+    
+    public function setForm($form): RenderIntarface
+    {
+        $this->form = $form;
+        
+        return $this;
+    } 
+    
+
+    /*
+   
     
     public function setFields(?array $fields): RenderIntarface
     {
@@ -84,4 +93,5 @@ abstract class RenderAbstract implements RenderIntarface
         
         return $this;
     }
+    */
 }

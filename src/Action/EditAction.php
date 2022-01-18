@@ -1,11 +1,26 @@
 <?php
 
+/*
+ * This file is part of the Sacrpkg CrudBundle package.
+ *
+ * (c) Oleg Bruyako <jonsm2184@gmail.com>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
 namespace sacrpkg\CrudBundle\Action;
 
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Edit action for more items.
+ */
 class EditAction extends ActionAbstract
 {
+    /**
+     * {@inheritdoc}
+     */
     public function execute($params = [])
     {
         $id = $params['id'];
@@ -22,6 +37,7 @@ class EditAction extends ActionAbstract
             return $this->notFoundObject();
 
         $form = $this->getForm($this->formclass, $row);
+        $this->form_item = $form;
  
         if ($this->request->getMethod() == 'POST') {
             $form->handleRequest($this->request);
@@ -55,7 +71,7 @@ class EditAction extends ActionAbstract
                         $this->afterSaveExecute($this->em, $row);
 
                         if (!($params['not_use_redirect'] ?? null))
-                            return $this->redirectToRoute($this->homeroute, []);
+                            return $this->redirectToRoute($this->homeroute, $this->homeparams);
                         else
                             return $this->redirectToRoute($this->editroute,
                                 ['action' => 'edit', 'id' => $row->getId()]); 
@@ -71,6 +87,13 @@ class EditAction extends ActionAbstract
         ]);
     }
     
+    /**
+     * Mark delete item.
+     *
+     * @param array $params
+     *
+     * @return Response
+     */
     protected function markdelete($params)
     {
         $id = $params['id'];

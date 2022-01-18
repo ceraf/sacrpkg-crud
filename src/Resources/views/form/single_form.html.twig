@@ -1,0 +1,168 @@
+{% block form_row %}
+    <tr>
+        <td>{{ form_label(form) }}</td>
+        <td>{{ form_widget(form) }}{{ form_errors(form) }}</td>
+    </tr>
+{% endblock form_row %}
+
+{% block form_label %}
+	{{ label }}
+{% endblock form_label %}
+
+{%- block choice_widget -%}
+    {% if expanded %}
+        {{- block('choice_widget_expanded') -}}
+    {% else %}
+        {{- block('choice_widget_collapsed') -}}
+    {% endif %}
+{%- endblock choice_widget -%}
+
+{% block location_widget %}
+<input type="hidden" name="{{ full_name }}" id="{{ id }}" value="{{ value.id|default(value|default('')) }}" >
+<input {{ block('attributes') }} type="text" autocomplete="off" name="{{ id }}_id_g" id="{{ id }}_id_g" {% if required %}required="required"{% endif %} class="form-control" value="">
+<div id="{{ id }}_options" class="dropdown-menu show" x-placement="bottom-start" style="will-change: transform; transform: translate3d(0px, 36px, 0px);"></div>
+<script>
+    $(function() {
+            if ($('#{{ id }}').val()) {
+                let id = $('#{{ id }}').val();
+                $.get(
+                    'https://api.unokit.com/v1/locations/?arrays=translations%2Cparent_locations&language_id=41&id=' + id,
+                    '',
+                    function (response) {
+                            let data = response.data;
+                            let name = data[0]['translations'][0].name;
+                            if (data[0]['parent_locations'][0]) {
+                                name += ', ' + data[0]['parent_locations'][0]['translations'][0].name;
+                            }
+                            $('#{{ id }}_id_g').val(name); 
+                    },
+                    'json'
+                )
+            }
+    
+        $('#{{ id }}_id_g').on('keyup', function (e) {
+            $('#{{ id }}').val('');
+            loadLocations($(this).val());
+        });
+        
+        $('#{{ id }}_options').on('click', 'a', function (e) {
+            let id = $(this).attr('rel-id');
+            $('#{{ id }}').val(id);
+            $('#{{ id }}_id_g').val($(this).text());
+            $("#{{ id }}_options").hide();
+        });
+        
+        $(document).mouseup(function (e) {
+            var container = $("#{{ id }}_options");
+            if (container.has(e.target).length === 0){
+                container.hide();
+            }
+        });
+        
+        function loadLocations(str)
+        {
+            $.get(
+                'https://api.unokit.com/v1/locations/?arrays=translations%2Cparent_locations&language_id=41&q%5Baccuracy%3Dstart_with%5D=' + str + '&count=5',
+                '',
+                function (response) {
+                        let data = response.data;
+                        par = $('#{{ id }}_options');
+                        par.find('>').remove();
+                        
+                        if (data.length) {
+                            for (var com in data) {
+                                let name = data[com]['translations'][0].name;
+                                if (data[com]['parent_locations'][0]) {
+                                    name += ', ' + data[com]['parent_locations'][0]['translations'][0].name;
+                                }
+                                par.append($('<a href="javascript:void(0);" rel-id="' + data[com].id + '" class="dropdown-item">' + name + '</a>'));
+                            }
+                            par = $('#{{ id }}_options').show();
+                        }
+                },
+                'json'
+            )
+        }
+    });
+</script>
+{% endblock location_widget %}
+
+{% block choice_widget_expanded %}
+	<div class="form-group my-2">
+    {%- for child in form %}
+	<div class="form-check form-check-inline">
+	<label class="form-check-label">	
+        {{- form_widget(child) -}}
+        {{- form_label(child, null, {translation_domain: choice_translation_domain}) -}}
+	</label>
+	</div>
+    {% endfor -%}
+	</div>
+{% endblock choice_widget_expanded %}
+
+{%- block radio_widget -%}
+    <input type="radio" class="form-check-input-styled" {{ block('widget_attributes') }}{% if value is defined %} value="{{ value }}"{% endif %}{% if checked %} checked="checked"{% endif %} data-fouc />
+{%- endblock radio_widget -%}
+
+{% block checkbox_row %}
+        <div class="col-lg-{{form.vars.attr.bt_size|default('12')}}">
+            <div class="form-group {% if not form.vars.valid %}has-error{% endif %}">
+                <div class="checkbox">
+                    <label>
+                        {{ form_widget(form) }}{{ form_label(form) }}
+                    </label>
+                </div>
+            {{ form_errors(form) }}
+            </div>
+        </div>
+{% endblock checkbox_row %}
+
+{% block checkbox_label %}
+    {{ label }}
+{% endblock checkbox_label %}
+
+{% block textarea_widget %}
+    <textarea {{ block('widget_attributes') }} >{% if value is not empty %}{{ value }}{% endif %}</textarea>
+    {% if attr.ckeditor|default('') is not empty %}
+        <script>
+           CKEDITOR.replace( '{{ full_name }}' );
+        </script>
+    {% endif %}
+{% endblock textarea_widget %}
+
+{% block preview_widget %}
+    
+	<div class="preview_field">
+        <div id="preview_file_name"></div>
+		<a href="javascript:void(0)"><img class="img-responsive" src="/{% if value %}{{attr.path}}{{ value }}{% else %}images/no-preview-big.jpg{% endif %}" /></a>
+        <input id="preview_fiels" type="hidden" {{ block('widget_attributes') }} value="{{ value }}" >
+		<input  type="file" style="display: none" name="{{ name }}" >
+        <div class="img-btn">
+            <button id="add_img" type="button" class="btn btn-primary btn-circle btn-lg" {% if value %}style="display: none"{% endif %}><i class="fa fa-file-o"></i></button>
+            <button id="edit_img" type="button" class="btn btn-success btn-circle btn-lg" {% if not value %}style="display: none"{% endif %}><i class="fa fa-edit"></i></button>
+            <button id="del_img" type="button" class="btn btn-danger btn-circle btn-lg" {% if not value %}style="display: none"{% endif %}><i class="fa fa-trash-o"></i></button>
+        </div>
+
+    </div>
+
+{% endblock preview_widget %}
+    
+{% block mac_widget %}
+    <input rel="mac" type="text" {{ block('widget_attributes') }} value="{{ value }}" />
+{% endblock mac_widget %}
+
+{% block ip_widget %}
+    <input rel="ip" type="text" {{ block('widget_attributes') }} value="{{ value }}" />
+{% endblock ip_widget %}
+
+{% block form_errors %}
+        {% if errors|length > 0 %}
+            {% for error in errors %}
+				<label class="control-label error" style="color: red" for="inputError">{{ error.message }}</label>
+            {% endfor %}
+        {% endif %}
+{% endblock form_errors %}
+
+
+
+

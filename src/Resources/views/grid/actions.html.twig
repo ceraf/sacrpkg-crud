@@ -1,0 +1,7 @@
+											<td class="text-center">
+												<div class="list-icons-item">
+                                                {% for action in actions %}
+													<a class="list-icons-item" title="{{ action['title'] }}" {% if (action['method']|default('get')) == 'post' %}param="{{ attribute(item, action['field_id']) }}" action="{{ path(action['route'], {'project': app.request.get('project'), action: action['action']}) }}"{% endif %} href="{% if (action['method']|default('get')) == 'post' %}javascript:void(0){% else %}{{ path(action['route'], {'project': app.request.get('project'), id: attribute(item, action['field_id']), action: action['action']}) }}{% endif %}" onClick="{{ action['onclick'] }}" ><i class="{{ action['icon'] }}"></i></a>
+												{% endfor %}
+												</div>
+                                            </td>

@@ -1,0 +1,31 @@
+<tr>
+    <form method="POST" action="{{ path(grid_route) }}">
+    {% for field in fields %}
+        <th>
+			{% if field['filter']['type']|default('') %}
+            {% if field['filter']['type'] == 'date' %}
+            <input class="flow-control" type="{{ field['filter']['type'] }}" value="{{ filter[field['name']~'_from']|default('') }}" name="filter[{{field['name']}}_from]">
+            <input class="flow-control" type="{{ field['filter']['type'] }}" value="{{ filter[field['name']~'_to']|default('') }}"  name="filter[{{field['name']}}_to]">
+            {% elseif field['filter']['type'] == 'select' %}
+            <select name="filter[{{field['name']}}]" class="flow-control">
+                <option {% if filter[field['name']]|default('') == '' %}selected="selected"{% endif %} value="">Все</option>
+                {% for choise in field['filter']['choises'] %}
+                <option {% if filter[field['name']]|default('') == choise['id'] %}selected="selected"{% endif %} value="{{ choise['id'] }}">{{ choise['name'] }}</option>
+                {% endfor %}
+            </select>
+            {% else %}
+            <input class="flow-control" type="{{ field['filter']['type'] }}" value="{{ filter[field['name']]|default('') }}" name="filter[{{field['name']}}]">
+            {% endif %}
+			{% if field['filter']['is_enable']|default('') %}
+				<label class="form-check-label"><input type="checkbox" style="width: 20px; height:10px" name="filter[{{field['name']}}_is_enable]" > {{ field['filter']['is_enable'] }}</label>
+			{% endif %}
+			{% endif %}
+        </th>
+<!--<th style="text-align: center;" {% if (sortby == field['name']) %}class="sorting_{{ sorttype }}"{% endif %} {% if field['style']|default('0') %}style="{{ field['style'] }}"{% endif %} ><a {% if (field['sortable']) %}sort-by="{{ field['name'] }}"{% endif %} href="javascript:void(0)">{{ field['label'] }}</a></th>-->
+    {% endfor %}
+        <th>
+            <a href="javascript:void(0)"><button class="btn btn-primary" type="submit" name="filter_apply" value="1">Применить</button></a>
+            <a href="javascript:void(0)"><button class="btn btn-primary" type="submit" name="filter_reset" value="1">Сбросить</button></a>
+        </th>
+    </form>
+</tr>

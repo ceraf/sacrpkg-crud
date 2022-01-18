@@ -17,10 +17,7 @@ trait CrudRepositoryTrait
 
         $qb = $this->afterCrudCreateQueryBuilder($qb, $paginator, $filter);
 
-        if ($paginator->getSortBy()) {
-            $sortby = 'p.'.$paginator->getSortBy();
-            $qb->orderBy($sortby, $paginator->getSortType());
-        }
+        $qb = $this->sortBy($qb, $paginator);
 
         $offset = $paginator->getCurrPage()*$paginator->getItemsOnPage();
 
@@ -37,6 +34,16 @@ trait CrudRepositoryTrait
         $res = $query->getResult();
     
         return $res;
+    }
+    
+    protected function sortBy($qb, PaginatorInterface $paginator): QueryBuilder
+    {
+        if ($paginator->getSortBy()) {
+            $sortby = 'p.'.$paginator->getSortBy();
+            $qb->orderBy($sortby, $paginator->getSortType());
+        }
+        
+        return $qb;
     }
     
     protected function getQBGrid(FilterInterface $filter, PaginatorInterface $paginator): QueryBuilder

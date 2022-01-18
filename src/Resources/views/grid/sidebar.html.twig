@@ -1,0 +1,178 @@
+<!-- SIDEBAR -->
+
+<div class="sidebar sidebar-light sidebar-main sidebar-expand-md">
+<form method="POST" action="{{ filter.filterurl }}">
+{% set filter_fields = filter.settings %}
+{% set filter_data = filter.data %}
+<!-- Sidebar mobile toggler -->
+<div class="sidebar-mobile-toggler text-center">
+<a href="#" class="sidebar-mobile-main-toggle">
+<i class="icon-arrow-left8"></i>
+</a>
+<a href="#" class="sidebar-mobile-expand">
+<i class="icon-screen-full"></i><i class="icon-screen-normal"></i>
+</a>
+</div>
+<!-- /sidebar mobile toggler -->
+
+<!-- Sidebar content -->
+
+<div class="sidebar-content">
+
+{% for key, field in filter_fields %}
+{% if field['field_type'] == 'text' %}
+    <!-- Input -->
+    <div class="card">
+    <div class="card-header bg-transparent">
+    <span class="text-uppercase font-size-sm font-weight-semibold">{{ field['title'] }}</span>
+    </div>
+    <div class="card-body">
+    <input type="text" class="form-control" name="filter[{{ key }}]" value="{{ filter_data[key]|default('') }}" placeholder="{{ field['placeholder']|default(field['title']) }}">
+    </div>
+    </div>
+    <!-- /Input -->
+{% endif %}
+{% if field['field_type'] == 'multiple' %}
+    <!-- Input -->
+    <div class="card">
+    <div class="card-header bg-transparent">
+    <span class="text-uppercase font-size-sm font-weight-semibold">{{ field['title'] }}</span>
+    </div>
+    <div class="card-body">
+    <select data-placeholder="Все" name="filter[{{ key }}][]" class="form-control multiselect-filtering" multiple="multiple" data-fouc>
+    {% for keyoption, option in field['options'] %}
+        <option {% if option in filter_data[key]|default('') %}selected="selected"{% endif %} value="{{ option }}">{{ keyoption }}</option>
+    {% endfor %}
+    </select>
+    </div>
+    </div>
+    <!-- /Input -->
+{% endif %}
+{% if field['field_type'] == 'range' %}
+<div class="card">
+<div class="card-header bg-transparent">
+<span class="text-uppercase font-size-sm font-weight-semibold">{{ field['title'] }}</span>
+</div>
+<div class="card-body py-3">
+<div class="row">
+<div class="col">
+<input type="date" class="form-control" name="filter[{{ key }}_start]" value="{{ filter_data[key~'_start']|default('') }}" placeholder="Все">
+</div>
+<div class="col">
+<input type="date" class="form-control" name="filter[{{ key }}_end]" value="{{ filter_data[key~'_end']|default('') }}" placeholder="Все">
+</div>
+</div>
+</div>
+</div>
+{% endif %}
+{% if field['field_type'] == 'range_number' %}
+<div class="card">
+<div class="card-header bg-transparent">
+<span class="text-uppercase font-size-sm font-weight-semibold">{{ field['title'] }}</span>
+</div>
+<div class="card-body py-3">
+<div class="row">
+<div class="col">
+<input type="text" class="form-control" name="filter[{{ key }}_start]" value="{{ filter_data[key~'_start']|default('') }}" placeholder="От">
+</div>
+<div class="col">
+<input type="text" class="form-control" name="filter[{{ key }}_end]" value="{{ filter_data[key~'_end']|default('') }}" placeholder="До">
+</div>
+</div>
+</div>
+</div>
+{% endif %}
+{% if field['field_type'] == 'location' %}
+    <!-- Input -->
+    <div class="card">
+    <div class="card-header bg-transparent">
+    <span class="text-uppercase font-size-sm font-weight-semibold">{{ field['title'] }}</span>
+    </div>
+    <div class="card-body">
+    <input type="hidden" name="filter[{{ key }}]" id="{{ key }}" value="{{ filter_data[key]|default('') }}" >
+    <input  type="text" autocomplete="off" name="filter[{{ key }}_id_g]" id="{{ key }}_id_g" value="{{ filter_data[key ~ '_id_g']|default('') }}" class="form-control" placeholder="{{ field['placeholder']|default(field['title']) }}" value="">
+    <div style="display:none" id="{{ key }}_options" class="dropdown-menu show" x-placement="bottom-start" style="will-change: transform; transform: translate3d(0px, 36px, 0px);"></div>
+    <script>
+        $(function() {
+            if ($('#{{ key }}').val()) {
+                let id = $('#{{ key }}').val();
+                $.get(
+                    'https://api.unokit.com/v1/locations/?arrays=translations%2Cparent_locations&language_id=41&id=' + id,
+                    '',
+                    function (response) {
+                            let data = response.data;
+                            let name = data[0]['translations'][0].name;
+                            if (data[0]['parent_locations'][0]) {
+                                name += ', ' + data[0]['parent_locations'][0]['translations'][0].name;
+                            }
+                            $('#{{ key }}_id_g').val(name);
+                    },
+                    'json'
+                )
+            }
+        
+            $('#{{ key }}_id_g').on('keyup', function (e) {
+                $('#{{ key }}').val('');
+                loadLocations($(this).val());
+            });
+            
+            $('#{{ key }}_options').on('click', 'a', function (e) {
+                let id = $(this).attr('rel-id');
+                $('#{{ key }}').val(id);
+                $('#{{ key }}_id_g').val($(this).text());
+                $("#{{ key }}_options").hide();
+            });
+            
+            $(document).mouseup(function (e) {
+                var container = $("#{{ key }}_options");
+                if (container.has(e.target).length === 0){
+                    container.hide();
+                }
+            });
+            
+            function loadLocations(str)
+            {
+                $.get(
+                    'https://api.unokit.com/v1/locations/?arrays=translations%2Cparent_locations&language_id=41&q%5Baccuracy%3Dstart_with%5D=' + str + '&count=5',
+                    '',
+                    function (response) {
+                            let data = response.data;
+                            par = $('#{{ key }}_options');
+                            par.find('>').remove();
+                            
+                            if (data.length) {
+                                for (var com in data) {
+                                    let name = data[com]['translations'][0].name;
+                                    if (data[com]['parent_locations'][0]) {
+                                        name += ', ' + data[com]['parent_locations'][0]['translations'][0].name;
+                                    }
+                                    par.append($('<a href="javascript:void(0);" rel-id="' + data[com].id + '" class="dropdown-item">' + name + '</a>'));
+                                }
+                                par = $('#{{ key }}_options').show();
+                            }
+                    },
+                    'json'
+                )
+            }
+        });
+    </script>
+    </div>
+    </div>
+    <!-- /Input -->
+{% endif %}
+
+{% endfor %}
+
+
+
+<div class="card">
+<div class="card-body">
+<button type="submit" name="filter_apply" value="1" class="btn btn-outline-primary btn-block mt-4">Найти</button>
+</div>
+</div>
+
+</div>
+</form>
+<!-- /sidebar content -->
+</div>
+<!-- /SIDEBAR -->
