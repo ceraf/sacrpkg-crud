@@ -21,7 +21,7 @@ class EditAction extends ActionAbstract
     /**
      * {@inheritdoc}
      */
-    public function execute($params = [])
+    public function execute($params = []): Response
     {
         $id = $params['id'];
         $usetr = $params['use_translate'] ?? false;

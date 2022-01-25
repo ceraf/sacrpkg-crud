@@ -12,6 +12,7 @@
 namespace sacrpkg\CrudBundle\Action;
 
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Add action.
@@ -21,7 +22,7 @@ class AddAction extends ActionAbstract
     /**
      * {@inheritdoc}
      */
-    public function execute($params = [])
+    public function execute($params = []): Response
     {
 		$row = new $this->entity();
         $this->beforeInitExecute($this->em, $row);

@@ -11,6 +11,7 @@
 
 namespace sacrpkg\CrudBundle\Action;
 
+use Symfony\Component\HttpFoundation\Response;
 /**
  * Delete action for more items.
  */
@@ -19,7 +20,7 @@ class DeleteAction extends ActionAbstract
     /**
      * {@inheritdoc}
      */
-    public function execute($params = [])
+    public function execute($params = []): Response
     {
         $id = $params['id'];
 		if ($this->request->getMethod() == 'POST') {

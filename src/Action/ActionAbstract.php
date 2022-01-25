@@ -188,7 +188,7 @@ abstract class ActionAbstract
      *
      * @return Response
      */
-    abstract public function execute($params = []);
+    abstract public function execute($params = []): Response;
     
     public function __construct(Request $request, ManagerRegistry $doctrine,
                 RouterInterface $router)
@@ -503,7 +503,7 @@ abstract class ActionAbstract
      *
      * @return RedirectResponse
      */
-    protected function redirectToRoute(string $route, $params = [])
+    protected function redirectToRoute(string $route, $params = []): RedirectResponse
     { 
         $url = $this->router->generate($route, $params, UrlGeneratorInterface::ABSOLUTE_PATH);
         return new RedirectResponse($url, 302);

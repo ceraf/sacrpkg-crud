@@ -22,7 +22,7 @@ class TestCommand extends Command
         return self::$defaultName;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $output->writeln([
             'Test command',

@@ -13,6 +13,7 @@ namespace sacrpkg\CrudBundle\Action;
 
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Add action for more items.
@@ -29,7 +30,7 @@ class AddMoreAction extends ActionAbstract
     /**
      * {@inheritdoc}
      */
-    public function execute($params = [])
+    public function execute($params = []): Response
     {
         $isRedirect = true;
         $dublicate_names = null;
