@@ -21,13 +21,16 @@ class AddAction extends ActionAbstract
                     try {
                         $this->beforePersistExecute($this->em, $row);  
                         $this->em->persist($form->getData());
+                        
+                        $this->saveFields($row, $this->request, $params);                                
                         $errors = $this->beforeSaveExecute($this->em, $row);
+                
                         if ($errors) {
                             if (is_array($errors))
                                 $errors = implode('<br>', $errors);
                             throw new ExceptionCustomString($errors);
                         }
-                        $this->saveFields($row, $this->request, $params);
+
                         $this->em->flush();
 
                         $this->em->getConnection()->commit();

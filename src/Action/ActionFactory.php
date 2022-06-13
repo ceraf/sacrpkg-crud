@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class ActionFactory implements ActionFactoryInterface
 {
@@ -27,13 +28,15 @@ class ActionFactory implements ActionFactoryInterface
     private $params;
 
     public function __construct(ManagerRegistry $doctrine, RequestStack $requestStack,
-            FormFactoryInterface $formfactory, RouterInterface $router, ContainerBagInterface $params)
+            FormFactoryInterface $formfactory, RouterInterface $router, ContainerBagInterface $params,
+            EventDispatcherInterface $dispatcher)
     {
         $this->request = $requestStack->getCurrentRequest();
         $this->formfactory = $formfactory;
         $this->router = $router;
         $this->doctrine = $doctrine;
         $this->params = $params;
+        $this->dispatcher = $dispatcher;
     }
     
     public function setController(AbstractController $controller): self
@@ -60,7 +63,8 @@ class ActionFactory implements ActionFactoryInterface
         $classname = $classlists[$action]['class'];
 
         $action = new $classname($this->request, $this->doctrine, $this->controller, $this->router);
-        $action->setFormFactory($this->formfactory);
+        $action->setFormFactory($this->formfactory)
+            ->setDispatcher($this->dispatcher);
         return $action;
     }
 }

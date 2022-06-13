@@ -6,6 +6,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 class EditAction extends ActionAbstract
 {
+    protected $row_old;
+    
     public function execute($params = [])
     {
         $id = $params['id'];
@@ -18,6 +20,9 @@ class EditAction extends ActionAbstract
 
 		$row = $this->em->getRepository($this->entity)
 				->find($id);
+                
+        $this->row_old = clone $row;
+        
         if (!$row)
             return $this->notFoundObject();
 
@@ -31,11 +36,12 @@ class EditAction extends ActionAbstract
                     try {
                         $isSuccess = true;
 
+                        $this->saveFields($row, $this->request, $params);
                         $errors = $this->beforeSaveExecute($this->em, $row);
                         if ($errors) {
                             throw new ExceptionCustomString($errors);
                         }
-                        $this->saveFields($row, $this->request, $params);
+
                         $this->em->flush();
  
                         $this->em->getConnection()->commit();

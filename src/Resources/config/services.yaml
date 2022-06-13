@@ -8,5 +8,6 @@ services:
             - '@form.factory'
             - '@router.default'
             - '@parameter_bag'
+            - '@debug.event_dispatcher'
 
     sacrpkg\CrudBundle\Action\ActionFactoryInterface: '@sacrpkg_crud.action_factory'

@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Routing\RouterInterface;
@@ -67,7 +68,7 @@ abstract class ActionAbstract
         return $this;
     }
     
-	public function setDispatcher(EventDispatcher $dispatcher)
+	public function setDispatcher(EventDispatcherInterface $dispatcher)
 	{
         $this->dispatcher = $dispatcher;
         return $this;		
