@@ -120,12 +120,12 @@ class EditAction extends ActionAbstract
 				}
 			}
         }
-        return $this->redirectToRoute($this->homeroute);
+        return $this->redirectToRoute($this->homeroute, $this->homeparams);
     }    
     
     protected function notFoundObject(): Response
     {
         $this->flashMessage('error', 'Объект не найден.');
-        return $this->redirectToRoute($this->homeroute);
+        return $this->redirectToRoute($this->homeroute, $this->homeparams);
     }
 }
