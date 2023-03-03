@@ -149,6 +149,7 @@ abstract class ActionAbstract
         $formdata['form'] = $form->createView();
         $formdata['title'] = $this->title;
         $formdata['home_route'] = $this->homeroute;
+        $formdata['home_params'] = $this->homeparams;
         $formdata['isDeleteBtn'] = $formdata['params']['isDeleteBtn'] ?? false;
         $formdata['isMarkDeleteBtn'] = $formdata['params']['isMarkDeleteBtn'] ?? false;
         $formdata['breadcrumb'] = $this->breadcrumb ?? null;
@@ -198,9 +199,9 @@ abstract class ActionAbstract
         return $this;
     } 
     
-    protected function redirectToRoute($route)
+    protected function redirectToRoute($route, $home_params = [])
     { 
-        $url = $this->router->generate($route, [], UrlGeneratorInterface::ABSOLUTE_PATH);
+        $url = $this->router->generate($route, $home_params, UrlGeneratorInterface::ABSOLUTE_PATH);
         return new RedirectResponse($url, 302);
     }
 

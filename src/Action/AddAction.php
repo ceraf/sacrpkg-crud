@@ -51,7 +51,7 @@ class AddAction extends ActionAbstract
                             $this->afterSaveExecute($this->em, $row);
                         
                             if (!($params['not_use_redirect'] ?? null)) {
-                                return $this->redirectToRoute($this->homeroute);
+                                return $this->redirectToRoute($this->homeroute, $this->homeparams);
                             } else {
                                 return $this->redirectToRoute($this->editroute,
                                     ['action' => 'edit', 'id' => $row->getId()]);
