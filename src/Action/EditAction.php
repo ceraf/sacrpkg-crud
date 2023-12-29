@@ -18,6 +18,8 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class EditAction extends ActionAbstract
 {
+    protected $row_old;
+    
     /**
      * {@inheritdoc}
      */
@@ -33,6 +35,9 @@ class EditAction extends ActionAbstract
 
 		$row = $this->em->getRepository($this->entity)
 				->find($id);
+                
+        $this->row_old = clone $row;
+                
         if (!$row)
             return $this->notFoundObject();
 

@@ -7,18 +7,18 @@
 					<div class="dropdown-divider"></div>
 				{% elseif action['conditionfield']|default('') %}
 					{% if attribute(item, action['conditionfield']) == action['conditionval'] %}
-                        {% if action['use_separator']|default('') %}<div class="dropdown-divider">2222</div>{% endif %}
+                        {% if action['use_separator']|default('') %}<div class="dropdown-divider"></div>{% endif %}
                         {% if action['field_name']|default('') %}
                         {% set field_name = action['field_name'] %}
                         {% else %}
                         {% set field_name = 'id' %}
                         {% endif %}
-						<a {% if action['target_blank']|default('') %}target="_blank"{% endif %} title="{{ action['title'] }}" {% if (action['method']|default('get')) == 'post' %}param="{{ attribute(item, action['field_id']) }}" action="{{ action['route'] }}"{% endif %} href="{% if (action['method']|default('get')) == 'post' %}javascript:void(0){% else %}{{ path(action['route'], {'project': app.request.get('project'), (field_name): attribute(item, action['field_id']), action: action['action']}) }}{% endif %}" class="dropdown-item"><i class="{{ action['icon'] }}"></i>{{ action['title'] }}</a>
+						<a rel-grid-action="{{ action['action']|default('') }}" {% if action['target_blank']|default('') %}target="_blank"{% endif %} title="{{ action['title'] }}" {% if (action['method']|default('get')) == 'post' %}param="{{ attribute(item, action['field_id']) }}" action="{{ action['route'] }}"{% endif %} href="{% if (action['method']|default('get')) == 'post' %}javascript:void(0){% else %}{{ path(action['route'], {(field_name): attribute(item, action['field_id']), action: action['action']}) }}{% endif %}" class="dropdown-item"><i class="{{ action['icon'] }}"></i>{{ action['title'] }}</a>
 					{% endif %}
 				{% elseif action['field_id_1']|default('') %}
-					<a title="{{ action['title'] }}" {% if (action['method']|default('get')) == 'post' %}param="{{ attribute(item, action['field_id']) }}" param_1="{{ attribute(item, action['field_id_1']) }}" action="{{ action['route'] }}"{% endif %} href="{% if (action['method']|default('get')) == 'post' %}javascript:void(0){% else %}{{ path(action['route'], {'project': app.request.get('project'), id: attribute(item, action['field_id']), action: action['action']}) }}{% endif %}" class="dropdown-item"><i class="{{ action['icon'] }}"></i>{{ action['title'] }}</a>
+					<a rel-grid-action="{{ action['action']|default('') }}" title="{{ action['title'] }}" {% if (action['method']|default('get')) == 'post' %}param="{{ attribute(item, action['field_id']) }}" param_1="{{ attribute(item, action['field_id_1']) }}" action="{{ action['route'] }}"{% endif %} href="{% if (action['method']|default('get')) == 'post' %}javascript:void(0){% else %}{{ path(action['route'], {'project': app.request.get('project'), id: attribute(item, action['field_id']), action: action['action']}) }}{% endif %}" class="dropdown-item"><i class="{{ action['icon'] }}"></i>{{ action['title'] }}</a>
 				{% else %}
-				<a title="{{ action['title'] }}" {% if (action['method']|default('get')) == 'post' %}param="{{ attribute(item, action['field_id']) }}" action="{{ action['route'] }}"{% endif %} href="{% if (action['method']|default('get')) == 'post' %}javascript:void(0){% else %}{{ path(action['route'], {'project': app.request.get('project'), id: attribute(item, action['field_id']), action: action['action']}) }}{% endif %}" class="dropdown-item"><i class="{{ action['icon'] }}"></i>{{ action['title'] }}</a>
+				<a rel-grid-action="{{ action['action']|default('') }}" title="{{ action['title'] }}" {% if (action['method']|default('get')) == 'post' %}param="{{ attribute(item, action['field_id']) }}" action="{{ action['route'] }}"{% endif %} href="{% if (action['method']|default('get')) == 'post' %}javascript:void(0){% else %}{{ path(action['route'], {id: attribute(item, action['field_id']), action: action['action']}) }}{% endif %}" class="dropdown-item"><i class="{{ action['icon'] }}"></i>{{ action['title'] }}</a>
 				{% endif %}
 			{% endfor %}
 		</div>

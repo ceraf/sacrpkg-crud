@@ -61,6 +61,15 @@ interface GridInterface
     public function setParam(string $name, $value): GridInterface;
     
     /**
+     * Set breadcrumb for template.
+     *
+     * @param array $breadcrumb 
+     *
+     * @return $this
+     */
+    public function setBreadcrumb(array $breadcrumb): GridInterface;    
+    
+    /**
      * Set template path.
      *
      * @param string $formview Template name 

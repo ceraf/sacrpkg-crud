@@ -57,6 +57,13 @@ class Filter implements FilterInterface
     protected $grid_route;
     
     /**
+     * Params for route name for grid list.
+     *
+     * @var array
+     */     
+    protected $grid_route_params;
+    
+    /**
      * @var RouterInterface
      */
     protected $router;
@@ -71,9 +78,10 @@ class Filter implements FilterInterface
     /**
      * {@inheritdoc}
      */
-    public function setGridRoute(string $route): FilterInterface
+    public function setGridRoute(string $route, array $params = []): FilterInterface
     {
         $this->grid_route = $route;
+        $this->grid_route_params = $params;
         
         return $this;
     }
@@ -93,7 +101,7 @@ class Filter implements FilterInterface
      */
     public function getFilterUrl(): string
     {
-        return $this->router->generate($this->grid_route);
+        return $this->router->generate($this->grid_route, $this->grid_route_params);
     }
     
     /**

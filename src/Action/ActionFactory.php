@@ -18,6 +18,7 @@ use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
 use sacrpkg\CrudBundle\Action\Render\RenderIntarface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Factory for action.
@@ -53,7 +54,7 @@ class ActionFactory implements ActionFactoryInterface
 
     public function __construct(ManagerRegistry $doctrine, RequestStack $requestStack,
             FormFactoryInterface $formfactory, RouterInterface $router, ContainerBagInterface $params,
-            RenderIntarface $render)
+            RenderIntarface $render, EventDispatcherInterface $dispatcher)
     {
         $this->request = $requestStack->getCurrentRequest();
         $this->formfactory = $formfactory;
@@ -61,6 +62,7 @@ class ActionFactory implements ActionFactoryInterface
         $this->doctrine = $doctrine;
         $this->params = $params;
         $this->render = $render;
+        $this->dispatcher = $dispatcher;
     }
     
     /**
@@ -74,7 +76,8 @@ class ActionFactory implements ActionFactoryInterface
 
         $action = new $classname($this->request, $this->doctrine, $this->router);
         $action->setFormFactory($this->formfactory)
-                ->setRender($this->render);
+                ->setRender($this->render)
+                ->setDispatcher($this->dispatcher);
                 
         return $action;
     }

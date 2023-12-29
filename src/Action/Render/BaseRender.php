@@ -29,7 +29,13 @@ class BaseRender extends RenderAbstract
         
         return $this->controller->renderCrudForm($formdata, $this->formview);
         */
+        /*
+        $view_form = $this->form->createView();
         
+        foreach ($view_form->getIterator() as $item) {
+            var_dump( get_class_methods($item));
+        }
+        */
         
         $params = [
             'form' => $this->form->createView(),

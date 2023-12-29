@@ -17,18 +17,32 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\EventDispatcher\EventDispatcher;
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use sacrpkg\CrudBundle\Action\Render\RenderIntarface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Abstract class for action.
  */
 abstract class ActionAbstract
 {
+    /**
+     * Dispatcher object.
+     *
+     * @var EventDispatcherInterface
+     */  
+    protected $dispatcher;
+    
+    /**
+     * ManagerRegistry object.
+     *
+     * @var ManagerRegistry
+     */    
+    protected $doctrine;
+    
     /**
      * Grid title.
      *
@@ -70,12 +84,6 @@ abstract class ActionAbstract
      * @var string
      */ 
     protected $homeroute;
-    
-    /**
-     *
-     * @var EventDispatcher
-     */ 
-	protected $dispatcher;
     
     /**
      * Path to template file.
@@ -194,6 +202,7 @@ abstract class ActionAbstract
                 RouterInterface $router)
     { 
         $this->request = $request;
+        $this->doctrine = $doctrine;
         $this->em = $doctrine->getManager();
         $this->router = $router;
         $this->session = $this->request->getSession();
@@ -261,7 +270,7 @@ abstract class ActionAbstract
      *
      * @return $this
      */
-	public function setDispatcher(EventDispatcher $dispatcher)
+	public function setDispatcher(EventDispatcherInterface $dispatcher)
 	{
         $this->dispatcher = $dispatcher;
         return $this;		
@@ -558,6 +567,4 @@ abstract class ActionAbstract
         
         return $res ?? null;
     }
-    
-    
 }

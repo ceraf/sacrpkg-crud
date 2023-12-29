@@ -115,6 +115,20 @@ abstract class GridAbstract implements GridInterface
     protected $grid_route;
     
     /**
+     * Params for route name for grid list.
+     *
+     * @var array
+     */
+    protected $grid_route_params = [];
+    
+    /**
+     * Params for route name for add.
+     *
+     * @var array
+     */
+    protected $add_route_params = [];    
+    
+    /**
      * Grid title.
      *
      * @var string
@@ -248,12 +262,23 @@ abstract class GridAbstract implements GridInterface
         $this->render = $render;
         
         $this->init();
-        $this->filter->setGridRoute($this->grid_route);
+
+        $this->filter->setGridRoute($this->grid_route, $this->grid_route_params);
         $this->paginator->setGrid($this)
             ->init($this->itemsonpage, $this->sortfield_default,
                                 $this->sorttype_default, $this->grid_route);           
         $this->afterInit();
  
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function setBreadcrumb(array $breadcrumb): self
+    {
+        $this->breadcrumb = $breadcrumb;
+        
+        return $this;
     }
 
     /**
@@ -372,6 +397,7 @@ abstract class GridAbstract implements GridInterface
         $this->buttons['add'] = [
             'title' => 'Добавить',
             'route' => $this->add_route,
+            'params' => $this->add_route_params,
             'action' => '',
             'btnstyle' => 'btn bg-success',
 			'icon' => 'icon-plus-circle2 mr-2'

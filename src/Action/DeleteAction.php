@@ -47,6 +47,6 @@ class DeleteAction extends ActionAbstract
 			}
         }
         
-		return $this->redirectToRoute($this->homeroute);
+		return $this->redirectToRoute($this->homeroute, $this->homeparams);
     }
 }

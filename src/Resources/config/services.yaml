@@ -19,6 +19,7 @@ services:
             - '@router.default'
             - '@parameter_bag'
             - '@sacrpkg_crud.action_render'
+            - '@debug.event_dispatcher'
 
     sacrpkg\CrudBundle\Action\ActionFactoryInterface: '@sacrpkg_crud.action_factory'
 

@@ -43,7 +43,7 @@ interface FilterInterface
      *
      * @return $this
      */
-    public function setGridRoute(string $route): FilterInterface;
+    public function setGridRoute(string $route, array $params = []): FilterInterface;
     
     /**
      * Generate url to grid.

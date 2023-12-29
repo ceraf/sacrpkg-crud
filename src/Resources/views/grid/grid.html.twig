@@ -16,15 +16,17 @@
             <div class="dropdown-menu dropdown-menu-right">
             {% for subbtn in btn['buttons'] %}
                 {% if subbtn['method']|default('') == 'POST' %}
-                    <a title="{{ subbtn['title'] }}" rel="multiple_btn" href="javascript:void(0)" rel-href="{{ path(subbtn['route'], {'project': app.request.get('project'), action: subbtn['action']}) }}" class="dropdown-item" >{{ subbtn['title'] }}</a>
+                    <a title="{{ subbtn['title'] }}" rel="multiple_btn" href="javascript:void(0)" rel-href="{{ path(subbtn['route'], {action: subbtn['action']}) }}" class="dropdown-item" >{{ subbtn['title'] }}</a>
                 {% else %}
-                    <a title="{{ subbtn['title'] }}" href="{{ path(subbtn['route'], {'project': app.request.get('project')}) }}" class="dropdown-item" >{{ subbtn['title'] }}</a>
+                    <a title="{{ subbtn['title'] }}" href="{{ path(subbtn['route']) }}" class="dropdown-item" >{{ subbtn['title'] }}</a>
                 {% endif %}
             {% endfor %}
             </div>
             </div>    
 		{% elseif btn['action']|default('') %}
 			<a title="{{ btn['title'] }}" href="{{ path(btn['route'], {action: btn['action']}) }}" class="{{ btn['btnstyle'] }}" >{% if btn['icon'] %}<i class="{{ btn['icon'] }}"></i>{% endif %}{{ btn['title'] }}</a>&nbsp;
+		{% elseif btn['params']|default('') %}
+			<a title="{{ btn['title'] }}" href="{{ path(btn['route'], btn['params']) }}" class="{{ btn['btnstyle'] }}" >{% if btn['icon'] %}<i class="{{ btn['icon'] }}"></i>{% endif %}{{ btn['title'] }}</a>&nbsp;
 		{% else %}
 			<a title="{{ btn['title'] }}" href="{{ path(btn['route']) }}" class="{{ btn['btnstyle'] }}" >{% if btn['icon'] %}<i class="{{ btn['icon'] }}"></i>{% endif %}{{ btn['title'] }}</a>&nbsp;
 		{% endif %}
@@ -33,13 +35,21 @@
 {% endif %}
 {% endblock %}
 {% block content %}
-{% if rows %}
+
 <div class="card">
 	{% block grid_header %}{% endblock %}
-	<div class="table-responsive">
+  <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper no-footer">
 
-	<table class="table table-hover">
-		<thead class="bg-light">
+    <div class="datatable-header">
+      {% if filter.usefilter|default('') and filter.settings %}
+    {% include '@SacrpkgCrud/grid/sidebar.html.twig' with {filter: filter} %}
+    {% endif %}
+
+    </div>
+    {% if rows %}
+    <div class="datatable-scroll">
+	<table class="table datatable-basic">
+        <thead>
                 <tr>
                     {% if use_checker|default('') %}<th width="70"><input type="checkbox" id="grid_all_check" class="form-check-input-styled" data-fouc></th>{% endif %}
                     {% for field in fields %}
@@ -52,8 +62,9 @@
                     {% if actions %}
 						<th style="width:50px;"></th>
                     {% endif %}
-                </tr>	
-		</thead>
+                </tr>
+        </thead>
+
 
 		<tbody>
 										{% for key, item in rows %}
@@ -81,12 +92,16 @@
             {% block sumlines %}{% endblock %}
 		</tbody>
 	</table>
-	</div>
+    </div>
+    {% endif %}
+  </div>
+    {% if rows %}
             {% if paginator and paginator.use %}
                 {% block paginator_body %}
                     {% include '@SacrpkgCrud/grid/paginator_body.html.twig' with {paginator: paginator} %}
                 {% endblock %}
             {% endif %}
+    {% endif %}
 </div>
 
 
@@ -98,14 +113,14 @@
 
         <!-- /#page-wrapper -->
 		{% block content_grid %}{% endblock %}
-{% endif %}
+        
+
+
 
 {% endblock %}
 
 {% block sidebar %}
-    {% if filter.usefilter|default('') and filter.settings %}
-    {% include '@SacrpkgCrud/grid/sidebar.html.twig' with {filter: filter} %}
-    {% endif %}
+
 {% endblock %}
 
 {% block table_row_bool %}
@@ -120,13 +135,16 @@
     <td {% if field['class']|default('') %}class="{{ field['class'] }}"{% endif %}>{{ field['custom_styles'][attribute(item, field['name'])]['title']|default('') }}</td>
 {% endblock %}
 
-
 {% block table_row_custom_style %}
     <td {% if field['class']|default('') %}class="{{ field['class'] }}"{% endif %}><span class="{{ field['custom_styles'][attribute(item, field['name'])]['style'] }}">{{ field['custom_styles'][attribute(item, field['name'])]['title'] }}</span></td>
 {% endblock %}
 
 {% block table_row_price %}
-    <td {% if field['class']|default('') %}class="{{ field['class'] }}"{% endif %}>{% if attribute(item, field['name']) %}{{ attribute(item, field['name'])|number_format(2, '.', ' ')  }}{% if field['currency'] %} {{ field['currency'].code }}{% endif %}{% else %}-{% endif %}</td>
+    <td {% if field['class']|default('') %}class="{{ field['class'] }}"{% endif %}>{% if attribute(item, field['name']) %}{{ attribute(item, field['name'])|number_format(2, '.', ' ')  }}{% if field['currency'] %} {{ field['currency'] }}{% endif %}{% else %}-{% endif %}</td>
+{% endblock %}
+
+{% block table_row_price_curr %}
+    <td {% if field['class']|default('') %}class="{{ field['class'] }}"{% endif %}>{% if attribute(item, field['name']) %}{{ attribute(item, field['name'])|price(currency.get()) }}{% else %}-{% endif %}</td>
 {% endblock %}
 
 {% block table_row_url %}
@@ -141,7 +159,17 @@
                                                 {% set param_name = 'id' %}
                                                 {% set param_value = 'id' %}
                                                 {% endif %}
-												<td {% if field['class']|default('') %}class="{{ field['class'] }}"{% endif %}><a class="text-default" {% if field['target_blank']|default('') %}target="_blank"{% endif %} href="{{ path(field['route'], {'project': app.request.get('project'), action: field['action'], (param_name): attribute(item, param_value)|default(0)}) }}">{{ attribute(item, field['name'])|raw }}</a></td>
+                                                {% set params = {} %}
+                                                {% if field['action']|default('') %}
+                                                {% set params = params|merge({ action: field['action']}) %}
+                                                {% endif %}
+                                                {% if attribute(item, param_value)|default(0) %}
+                                                {% set params = params|merge({ (param_name): attribute(item, param_value)}) %}
+                                                {% endif %}
+                                                {% if field['route_params']|default(0) %}
+                                                {% set params = params|merge(field['route_params']) %}
+                                                {% endif %}
+												<td {% if field['class']|default('') %}class="{{ field['class'] }}"{% endif %}><a class="text-default" {% if field['target_blank']|default('') %}target="_blank"{% endif %} href="{{ path(field['route'], params) }}">{{ attribute(item, field['name'])|raw }}</a></td>
 {% endblock %}
 
 {% block table_row_exturl %}
@@ -154,4 +182,23 @@
 
 {% block table_row %}
     <td {% if field['class']|default('') %}class="{{ field['class'] }}"{% endif %}>{{ attribute(item, field['name'])|raw }}</td>
+{% endblock %}
+
+{% block table_row_span %}
+    <td {% if field['class']|default('') %}class="{{ field['class'] }}"{% endif %}><span class="{{ field['span_class']|default('')  }}">{{ attribute(item, field['name'])|raw }}</span></td>
+{% endblock %}
+
+{% block table_row_logo %}
+    <td {% if field['class']|default('') %}class="{{ field['class'] }}"{% endif %}><img height="40px" src="{{ attribute(item, field['name']) }}" ></td>
+{% endblock %}
+
+{% block table_row_rating %}
+    <td {% if field['class']|default('') %}class="{{ field['class'] }}"{% endif %}>
+    {% if (attribute(item, field['name']) > 0) and (attribute(item, field['name']) <= 5) %}
+    {% set rate = attribute(item, field['name'])%}
+        {% for i in 1..rate %}
+            <i class="icon-medal " aria-hidden="true"></i>
+        {% endfor %}
+    {% endif %}
+    </td>
 {% endblock %}
